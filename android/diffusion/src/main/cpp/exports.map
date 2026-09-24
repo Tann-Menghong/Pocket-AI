@@ -1,0 +1,1 @@
+{ global: Java_com_example_pocketdiffusion_ImageRuntime_*; local: *; };

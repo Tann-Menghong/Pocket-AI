@@ -1,0 +1,173 @@
+[
+  {
+    "abi": "arm64-v8a",
+    "checks": [
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libai-chat.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libc++_shared.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libdatastore_shared_counter.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-base.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-cpu-android_armv8.0_1.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-cpu-android_armv8.2_1.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-cpu-android_armv8.2_2.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-cpu-android_armv8.6_1.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-cpu-android_armv9.0_1.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-cpu-android_armv9.2_1.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-cpu-android_armv9.2_2.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libllama-common.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libllama.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libomp.so",
+          "missing": []
+        }
+      }
+    ]
+  },
+  {
+    "abi": "x86_64",
+    "checks": [
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libai-chat.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libc++_shared.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libdatastore_shared_counter.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-base.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml-cpu.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libggml.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libllama-common.so",
+          "missing": []
+        }
+      },
+      {
+        "status": "fulfilled",
+        "value": {
+          "file": "libllama.so",
+          "missing": []
+        }
+      }
+    ]
+  }
+]

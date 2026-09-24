@@ -1,0 +1,127 @@
+﻿[
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libai-chat.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libc++_shared.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libdatastore_shared_counter.so",
+        "Alignments":  "0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml-base.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml-cpu-android_armv8.0_1.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml-cpu-android_armv8.2_1.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml-cpu-android_armv8.2_2.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml-cpu-android_armv8.6_1.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml-cpu-android_armv9.0_1.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml-cpu-android_armv9.2_1.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml-cpu-android_armv9.2_2.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libggml.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libllama.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libomp.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "arm64-v8a",
+        "Library":  "libpocket-diffusion.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "armeabi-v7a",
+        "Library":  "libdatastore_shared_counter.so",
+        "Alignments":  "0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86",
+        "Library":  "libdatastore_shared_counter.so",
+        "Alignments":  "0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86_64",
+        "Library":  "libai-chat.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86_64",
+        "Library":  "libc++_shared.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86_64",
+        "Library":  "libdatastore_shared_counter.so",
+        "Alignments":  "0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86_64",
+        "Library":  "libggml-base.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86_64",
+        "Library":  "libggml-cpu.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86_64",
+        "Library":  "libggml.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86_64",
+        "Library":  "libllama.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    },
+    {
+        "ABI":  "x86_64",
+        "Library":  "libpocket-diffusion.so",
+        "Alignments":  "0x4000,0x4000,0x4000,0x4000"
+    }
+]

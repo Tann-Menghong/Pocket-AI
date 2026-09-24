@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.llama.core.SafetyPolicyTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-09-24T16:57:52.464Z" hostname="DESKTOP-FIQHK2D" time="0.097">
+  <properties/>
+  <testcase name="blocksImpossibleMemory" classname="com.example.llama.core.SafetyPolicyTest" time="0.028"/>
+  <testcase name="rejectsNotGguf" classname="com.example.llama.core.SafetyPolicyTest" time="0.041"/>
+  <testcase name="rejectsChangedTotal" classname="com.example.llama.core.SafetyPolicyTest" time="0.008"/>
+  <testcase name="contextAddsMemory" classname="com.example.llama.core.SafetyPolicyTest" time="0.004"/>
+  <testcase name="resumesOnlyMatchingRange" classname="com.example.llama.core.SafetyPolicyTest" time="0.001"/>
+  <testcase name="profilesRespectCoreCount" classname="com.example.llama.core.SafetyPolicyTest" time="0.001"/>
+  <testcase name="rejectsImpossibleTokenBudget" classname="com.example.llama.core.SafetyPolicyTest" time="0.002"/>
+  <testcase name="rejectsWrongRange" classname="com.example.llama.core.SafetyPolicyTest" time="0.001"/>
+  <testcase name="blocks32Bit" classname="com.example.llama.core.SafetyPolicyTest" time="0.0"/>
+  <testcase name="blocksVideo" classname="com.example.llama.core.SafetyPolicyTest" time="0.001"/>
+  <testcase name="rejectsHttpFailure" classname="com.example.llama.core.SafetyPolicyTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

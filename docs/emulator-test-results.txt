@@ -1,0 +1,8 @@
+
+com.example.llama.PlatformSmokeTest:....
+
+Time: 16.636
+
+OK (4 tests)
+
+

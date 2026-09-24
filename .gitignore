@@ -1,0 +1,22 @@
+# Generated files and local configuration
+**/build/
+**/.gradle/
+**/.cxx/
+**/.externalNativeBuild/
+**/.idea/
+**/local.properties
+*.log
+*.apk
+*.apk.sha256
+*.gguf
+*.part
+*.jks
+*.keystore
+.env
+.env.*
+
+/baseline-source/
+/sd-api-review.h
+
+/qa-ui.xml
+**/.kotlin/

@@ -1,0 +1,8 @@
+
+com.example.llama.FullTextGenerationTest:.
+
+Time: 110.473
+
+OK (1 test)
+
+
