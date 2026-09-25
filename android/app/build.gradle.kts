@@ -15,8 +15,8 @@ android {
         minSdk = 33
         targetSdk = 36
 
-        versionCode = 2
-        versionName = "2.0-preview"
+        versionCode = 3
+        versionName = "2.1.0-preview"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -34,6 +34,7 @@ android {
             )
         }
         release {
+            signingConfig = signingConfigs.getByName("debug") // Keeps upgrades compatible with existing preview installs.
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
@@ -51,6 +52,8 @@ android {
 dependencies {
     implementation(libs.bundles.androidx)
     implementation(libs.material)
+    implementation("io.noties.markwon:core:4.6.2")
+    implementation("io.noties.markwon:ext-tables:4.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
 

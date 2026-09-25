@@ -1,0 +1,9 @@
+
+com.example.llama.FullTextGenerationTest:INSTRUMENTATION_STATUS: model=qwen-small
+INSTRUMENTATION_STATUS: performance=13 tokens · 4.8 tok/s · 2.7 s
+INSTRUMENTATION_STATUS_CODE: 2
+.
+
+Time: 11.657
+
+OK (1 test)

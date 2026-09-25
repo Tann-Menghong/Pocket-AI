@@ -48,7 +48,7 @@ class UiKit(val context:Context,val settings:Settings){
   if(multiline){minLines=2;maxLines=5}
   contentDescription=hintText
  }
- fun shape(color:Int)=GradientDrawable().apply{setColor(color);cornerRadius=dp(if(settings.bool("rounded",true))20 else 4).toFloat()}
+ fun shape(color:Int)=GradientDrawable().apply{setColor(color);cornerRadius=dp(if(settings.bool("rounded",true))settings.int("bubbleRadius",20).coerceIn(4,28) else 4).toFloat()}
  fun card():LinearLayout=column().apply{setPadding(dp(16),dp(12),dp(16),dp(12));background=shape(p.surface);layoutParams=LinearLayout.LayoutParams(-1,-2).apply{bottomMargin=dp(12)}}
  fun addButtons(parent:LinearLayout,vararg buttons:View){val r=row();buttons.forEach{r.addView(it,LinearLayout.LayoutParams(0,-2,1f).apply{marginEnd=dp(4)})};parent.addView(r)}
  fun section(parent:LinearLayout,title:String,description:String=""){parent.addView(label(title,22,true));if(description.isNotEmpty())parent.addView(label(description,14,secondary=true))}

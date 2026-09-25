@@ -13,6 +13,7 @@ static llama_model *model=nullptr;
 static llama_context *ctx=nullptr;
 static llama_sampler *sampler=nullptr;
 static std::atomic<bool> cancelled{false};
+static std::atomic<int> loading_progress{0};
 static int position=0, remaining=0, generated=0;
 static void fail(JNIEnv *e,const char *m){e->ThrowNew(e->FindClass("java/io/IOException"),m);}
 static std::string utf8(JNIEnv *e,jstring s){
@@ -23,14 +24,14 @@ static std::string utf8(JNIEnv *e,jstring s){
 }
 static void release(){llama_sampler_free(sampler);sampler=nullptr;llama_free(ctx);ctx=nullptr;llama_model_free(model);model=nullptr;}
 static bool abort_eval(void *){return cancelled.load();}
-static bool load_progress(float,void *){return !cancelled.load();}
+static bool load_progress(float progress,void *){loading_progress=std::clamp((int)(progress*90),0,90);return !cancelled.load();}
 extern "C" JNIEXPORT void JNICALL Java_com_arm_aichat_PocketRuntime_nativeInit(JNIEnv *e,jobject,jstring dir){
  try{auto path=utf8(e,dir);llama_log_set([](ggml_log_level,const char*,void*){},nullptr);ggml_backend_load_all_from_path(path.c_str());llama_backend_init();}
  catch(const std::exception&){fail(e,"The local text runtime could not start.");}
 }
 extern "C" JNIEXPORT void JNICALL Java_com_arm_aichat_PocketRuntime_nativeLoad(JNIEnv *e,jobject,jstring path,jint context,jint threads){
  try{
-  release();cancelled=false;
+  release();cancelled=false;loading_progress=0;
   if(context<1024||context>8192)throw std::runtime_error("Invalid context length.");
   auto p=llama_model_default_params();p.n_gpu_layers=0;p.load_mode=LLAMA_LOAD_MODE_MMAP;p.progress_callback=load_progress;
   auto file=utf8(e,path);model=llama_model_load_from_file(file.c_str(),p);
@@ -38,6 +39,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_arm_aichat_PocketRuntime_nativeLoad(J
   auto cp=llama_context_default_params();cp.n_ctx=context;cp.n_batch=256;cp.n_ubatch=128;cp.n_threads=std::clamp((int)threads,1,8);cp.n_threads_batch=cp.n_threads;cp.abort_callback=abort_eval;
   ctx=llama_init_from_model(model,cp);
   if(!ctx)throw std::runtime_error("Not enough memory for this context. Reduce context length or choose a smaller model.");
+  loading_progress=100;
  }catch(const std::exception&x){release();fail(e,x.what());}
 }
 static std::vector<llama_token> tokenize(const std::string &s){
@@ -102,3 +104,5 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_com_arm_aichat_PocketRuntime_native
 extern "C" JNIEXPORT void JNICALL Java_com_arm_aichat_PocketRuntime_nativeCancel(JNIEnv*,jobject){cancelled=true;}
 extern "C" JNIEXPORT void JNICALL Java_com_arm_aichat_PocketRuntime_nativeUnload(JNIEnv*,jobject){release();}
 extern "C" JNIEXPORT jint JNICALL Java_com_arm_aichat_PocketRuntime_nativeCount(JNIEnv*,jobject){return generated;}
+
+extern "C" JNIEXPORT jint JNICALL Java_com_arm_aichat_PocketRuntime_nativeLoadProgress(JNIEnv*,jobject){return loading_progress.load();}

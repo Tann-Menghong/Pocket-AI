@@ -155,6 +155,7 @@ class DownloadService:Service() {
   val hash=graph.hashFile(part)
   checkActive()
   if(hash!=m.sha256){part.delete();error("File verification failed. The damaged download was removed; retry to fetch it again.")}
+  if(m.kind=="text")check(GgufInspector.architecture(part)==m.architecture){"Downloaded GGUF architecture does not match the repository metadata."}
   synchronized(stateLock){checkActive()
   try{Files.move(part.toPath(),final.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING)}
   catch(e:java.nio.file.AtomicMoveNotSupportedException){Files.move(part.toPath(),final.toPath(),StandardCopyOption.REPLACE_EXISTING)}

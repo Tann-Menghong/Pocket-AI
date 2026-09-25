@@ -20,12 +20,30 @@ class PocketDatabase(c:Context):SQLiteOpenHelper(c,File(c.noBackupFilesDir,"pock
  override fun onUpgrade(db:SQLiteDatabase,old:Int,new:Int){error("A database migration is required. Your data has not been deleted.")}
  fun all(category:String):List<JSONObject> = readableDatabase.query("records",arrayOf("payload"),"category=?",arrayOf(category),null,null,null).use{c->buildList{while(c.moveToNext())add(JSONObject(c.getString(0)))}}
  fun get(category:String,id:String):JSONObject? = readableDatabase.query("records",arrayOf("payload"),"category=? AND id=?",arrayOf(category,id),null,null,null).use{if(it.moveToFirst())JSONObject(it.getString(0))else null}
- fun put(category:String,id:String,o:JSONObject){val v=ContentValues().apply{put("category",category);put("id",id);put("payload",o.toString())};check(writableDatabase.insertWithOnConflict("records",null,v,SQLiteDatabase.CONFLICT_REPLACE)!=-1L){"Local data could not be saved."}}
- fun remove(category:String,id:String){writableDatabase.delete("records","category=? AND id=?",arrayOf(category,id))}
+ private fun rawPut(category:String,id:String,o:JSONObject){val v=ContentValues().apply{put("category",category);put("id",id);put("payload",o.toString())};check(writableDatabase.insertWithOnConflict("records",null,v,SQLiteDatabase.CONFLICT_REPLACE)!=-1L){"Local data could not be saved."}}
+ fun put(category:String,id:String,o:JSONObject){if(category!="chat"){rawPut(category,id,o);return};transaction{rawPut(category,id,o);val c=Conversation.from(o);rawPut("chatSummary",id,c.copy(messages=c.messages.takeLast(2).map{it.copy(text=it.text.take(500))},summary=true,totalMessages=c.messages.size).json())}}
+
+ fun remove(category:String,id:String){writableDatabase.delete("records","category=? AND id=?",arrayOf(category,id));if(category=="chat")remove("chatSummary",id)}
  fun transaction(block:()->Unit){val db=writableDatabase;db.beginTransaction();try{block();db.setTransactionSuccessful()}finally{db.endTransaction()}}
 }
 class Settings(c:Context) {
  private val p=c.getSharedPreferences("pocket-v2",0)
+ fun snapshot():JSONObject=JSONObject(p.all.filterKeys{it !in setOf("updateDownloadId","updateCandidate","updateStatus","activeChat")})
+ fun validateRestore(o:JSONObject):JSONObject {
+  val safe=JSONObject()
+  val strings=setOf("theme","accent","profile","animations","modelDensity","homeSections","defaultModel","defaultImage","options","imageWidth","imageHeight","imageSteps","imageSeed","imageCfg","imageCount")
+  val booleans=setOf("dynamic","rounded","timestamps","markdown","highlight","haptic","streaming","autoScroll","stats","resourceMonitor","galleryGrid")
+  val ints=mapOf("fontPercent" to 80..150,"chatSize" to 12..30,"spacing" to 4..30,"bubbleRadius" to 4..28)
+  o.keys().forEach{k->val value=o.get(k);when{
+   k in strings->{require(value is String&&value.length<=20000){"Invalid setting: "+k};if(k=="options")GenerationOptions.from(JSONObject(value)).validate();safe.put(k,value)}
+   k in booleans||k.startsWith("favorite.")->{require(value is Boolean&&k.length<120){"Invalid setting: "+k};safe.put(k,value)}
+   k in ints->{require(value is Int&&value in ints.getValue(k)){"Invalid setting: "+k};safe.put(k,value)}
+  }}
+  return safe
+ }
+ fun restore(o:JSONObject){val safe=validateRestore(o);val edit=p.edit();safe.keys().forEach{k->when(val v=safe.get(k)){is String->edit.putString(k,v);is Boolean->edit.putBoolean(k,v);is Int->edit.putInt(k,v)}};check(edit.commit()){"Could not restore settings."}}
+
+ fun remove(key:String){p.edit().remove(key).apply()}
  fun string(key:String,default:String="")=p.getString(key,default)?:default
  fun bool(key:String,default:Boolean=false)=p.getBoolean(key,default)
  fun int(key:String,default:Int)=p.getInt(key,default)
@@ -54,6 +72,8 @@ class AppGraph(val app:Application) {
  val ready=CompletableDeferred<Unit>()
  val modelsDir=File(app.noBackupFilesDir,"models").apply{mkdirs()}
  val mediaDir=File(app.noBackupFilesDir,"images").apply{mkdirs()}
+ val updates by lazy { com.example.llama.updates.UpdateManager(this) }
+ val library by lazy { LibraryTools(this) }
  val runtime by lazy { com.arm.aichat.PocketRuntime(app) }
  val inferenceLock=kotlinx.coroutines.sync.Mutex()
  val downloadLock=kotlinx.coroutines.sync.Mutex()
@@ -81,7 +101,8 @@ class AppGraph(val app:Application) {
     db.all("download").map{DownloadRecord.from(it)}.filter{it.state in setOf("downloading","verifying","queued")}.forEach{putDownload(it.copy(state="paused",speed=0,error="Interrupted by an app or device restart. Resume when ready."))}
     db.all("chat").map{Conversation.from(it)}.filter{c->c.messages.any{it.state=="generating"}}.forEach{c->db.put("chat",c.id,c.copy(messages=c.messages.map{if(it.state=="generating")it.copy(state="interrupted")else it}).json())}
    }
-   refreshDownloads();ready.complete(Unit)
+   if(db.get("meta","summaryIndex")==null){db.readableDatabase.query("records",arrayOf("id","payload"),"category=?",arrayOf("chat"),null,null,null).use{cursor->while(cursor.moveToNext()){val c=Conversation.from(JSONObject(cursor.getString(1)));db.put("chatSummary",c.id,c.copy(messages=c.messages.takeLast(2).map{it.copy(text=it.text.take(500))},summary=true,totalMessages=c.messages.size).json())}};db.put("meta","summaryIndex",JSONObject().put("version",1))}
+   library.initialize();refreshDownloads();ready.complete(Unit);com.example.llama.updates.UpdateManager.schedule(this@AppGraph)
   }catch(t:Exception){error.value="Local data could not be opened: "+t.message;ready.completeExceptionally(t)}
  }}
  fun model(id:String)=models.value.firstOrNull{it.id==id}?:error("The selected model is no longer available.")
@@ -94,7 +115,8 @@ class AppGraph(val app:Application) {
  fun putDownload(d:DownloadRecord){db.put("download",d.id,d.json())}
  fun refreshDownloads(){downloads.value=db.all("download").map{DownloadRecord.from(it)}}
  fun record(id:String)=db.get("download",id)?.let{DownloadRecord.from(it)}
- fun conversations()=db.all("chat").map{Conversation.from(it)}.sortedWith(compareByDescending<Conversation>{it.pinned}.thenByDescending{it.updated})
+ fun fullChat(id:String)=db.get("chat",id)?.let{Conversation.from(it)}?:error("This conversation no longer exists.")
+ fun conversations()=db.all("chatSummary").map{Conversation.from(it)}.sortedWith(compareByDescending<Conversation>{it.pinned}.thenByDescending{it.updated})
  fun media()=db.all("media").map{MediaItem.from(it)}.sortedByDescending{it.created}
  suspend fun hashFile(f:File):String {val digest=MessageDigest.getInstance("SHA-256");f.inputStream().use{input->val buffer=ByteArray(256*1024);while(true){currentCoroutineContext().ensureActive();val n=input.read(buffer);if(n<0)break;digest.update(buffer,0,n)}};return digest.digest().joinToString(""){"%02x".format(it.toInt() and 255)}}
  suspend fun storage():Map<String,Long> = withContext(Dispatchers.IO){mapOf("AI models" to modelsDir.walkTopDown().filter{it.isFile}.sumOf{it.length()},"Generated images" to mediaDir.walkTopDown().filter{it.isFile}.sumOf{it.length()},"Generated videos" to 0L,"Conversations & metadata" to app.noBackupFilesDir.listFiles().orEmpty().filter{it.name.startsWith("pocket.db")||it.name=="chat.json"}.sumOf{it.length()},"Cache" to app.cacheDir.walkTopDown().filter{it.isFile}.sumOf{it.length()})}

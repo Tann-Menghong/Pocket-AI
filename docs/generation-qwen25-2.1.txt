@@ -1,0 +1,25 @@
+
+com.example.llama.FullTextGenerationTest:
+Error in verifiedModelGeneratesOffline(com.example.llama.FullTextGenerationTest):
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 600000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:188)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:156)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:1012)
+
+
+Time: 603.358
+There was 1 failure:
+1) verifiedModelGeneratesOffline(com.example.llama.FullTextGenerationTest)
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 600000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:188)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:156)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:1012)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

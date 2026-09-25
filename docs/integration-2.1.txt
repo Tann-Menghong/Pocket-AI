@@ -1,0 +1,8 @@
+
+com.example.llama.PlatformSmokeTest:....
+com.example.llama.LibraryUpgradeTest:...
+com.example.llama.UpdateIntegrationTest:..
+
+Time: 19.699
+
+OK (9 tests)

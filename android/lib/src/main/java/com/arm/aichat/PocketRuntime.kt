@@ -23,6 +23,8 @@ class PocketRuntime(context:Context) {
  private external fun nativeCancel()
  private external fun nativeUnload()
  private external fun nativeCount():Int
+ private external fun nativeLoadProgress():Int
+ fun loadProgress()=if(linked)nativeLoadProgress()else 0
  suspend fun load(path:String,options:TextOptions)=withContext(dispatcher){
   if(!started){System.loadLibrary("ai-chat");linked=true;nativeInit(directory);started=true}
   if(loadedPath!=path||loadedContext!=options.context){nativeUnload();loadedPath="";nativeLoad(path,options.context,options.threads);loadedPath=path;loadedContext=options.context}

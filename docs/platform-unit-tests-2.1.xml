@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.llama.core.PlatformPolicyTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-25T11:17:25.373Z" hostname="DESKTOP-FIQHK2D" time="0.205">
+  <properties/>
+  <testcase name="stableAndPrereleaseOrdering" classname="com.example.llama.core.PlatformPolicyTest" time="0.102"/>
+  <testcase name="versionComparisonIsNumeric" classname="com.example.llama.core.PlatformPolicyTest" time="0.001"/>
+  <testcase name="templateFieldsAreDistinctAndLiteral" classname="com.example.llama.core.PlatformPolicyTest" time="0.075"/>
+  <testcase name="rejectWrongSignerPackageAndDowngrade" classname="com.example.llama.core.PlatformPolicyTest" time="0.008"/>
+  <testcase name="onlyOurHttpsReleaseAssetsAreTrusted" classname="com.example.llama.core.PlatformPolicyTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -19,22 +19,22 @@ data class ModelSpec(
  val license: String = "Apache-2.0", val creator: String = "Qwen",
  val purposes: String = "Chat, Writing, Translation, Multilingual",
  val memory: Long = bytes + 900_000_000L, val recommended: Long = 4_000_000_000L,
- val experimental: Boolean = false, val imported: Boolean = false
+ val experimental: Boolean = false, val imported: Boolean = false, val remoteFile:String=""
 ) {
- val url get() = if (repo.isBlank()) "" else "https://huggingface.co/$repo/resolve/$revision/$file"
+ val url get() = if (repo.isBlank()) "" else "https://huggingface.co/$repo/resolve/$revision/${remoteFile.ifBlank{file}}"
  val source get() = if (imported) "Imported from your device" else "https://huggingface.co/$repo"
  fun json() = JSONObject().put("id",id).put("name",name).put("file",file).put("bytes",bytes).put("sha256",sha256)
   .put("repo",repo).put("revision",revision).put("kind",kind).put("architecture",architecture).put("quantization",quantization)
-  .put("license",license).put("creator",creator).put("purposes",purposes).put("memory",memory).put("recommended",recommended).put("experimental",experimental).put("imported",imported)
- companion object { fun from(o: JSONObject) = ModelSpec(o.getString("id"),o.getString("name"),o.getString("file"),o.getLong("bytes"),o.getString("sha256"),o.optString("repo"),o.optString("revision"),o.optString("kind","text"),o.optString("architecture","qwen3"),o.optString("quantization","Unknown"),o.optString("license","Check source"),o.optString("creator"),o.optString("purposes"),o.optLong("memory"),o.optLong("recommended"),o.optBoolean("experimental"),o.optBoolean("imported")) }
+  .put("license",license).put("creator",creator).put("purposes",purposes).put("memory",memory).put("recommended",recommended).put("experimental",experimental).put("imported",imported).put("remoteFile",remoteFile)
+ companion object { fun from(o: JSONObject) = ModelSpec(o.getString("id"),o.getString("name"),o.getString("file"),o.getLong("bytes"),o.getString("sha256"),o.optString("repo"),o.optString("revision"),o.optString("kind","text"),o.optString("architecture","qwen3"),o.optString("quantization","Unknown"),o.optString("license","Check source"),o.optString("creator"),o.optString("purposes"),o.optLong("memory"),o.optLong("recommended"),o.optBoolean("experimental"),o.optBoolean("imported"),o.optString("remoteFile")) }
 }
 data class ChatMessage(val id: String = newId(), val role: String, val text: String, val time: Long = System.currentTimeMillis(), val stats: String = "", val state: String = "complete") {
  fun json()=JSONObject().put("id",id).put("role",role).put("text",text).put("time",time).put("stats",stats).put("state",state)
  companion object { fun from(o:JSONObject)=ChatMessage(o.optString("id",newId()),o.getString("role"),o.getString("text"),o.optLong("time",System.currentTimeMillis()),o.optString("stats"),o.optString("state","complete")) }
 }
-data class Conversation(val id:String=newId(), val title:String="New conversation", val pinned:Boolean=false, val updated:Long=System.currentTimeMillis(), val modelId:String="qwen-small", val messages:List<ChatMessage> = emptyList()) {
- fun json()=JSONObject().put("id",id).put("title",title).put("pinned",pinned).put("updated",updated).put("modelId",modelId).put("messages",JSONArray(messages.map{it.json()}))
- companion object { fun from(o:JSONObject):Conversation {val a=o.optJSONArray("messages")?:JSONArray();return Conversation(o.getString("id"),o.getString("title"),o.optBoolean("pinned"),o.optLong("updated"),o.optString("modelId","qwen-small"),(0 until a.length()).map{ChatMessage.from(a.getJSONObject(it))})} }
+data class Conversation(val id:String=newId(), val title:String="New conversation", val pinned:Boolean=false, val updated:Long=System.currentTimeMillis(), val modelId:String="qwen-small", val messages:List<ChatMessage> = emptyList(), val archived:Boolean=false,val summary:Boolean=false,val totalMessages:Int=messages.size) {
+ fun json()=JSONObject().put("id",id).put("title",title).put("pinned",pinned).put("updated",updated).put("modelId",modelId).put("messages",JSONArray(messages.map{it.json()})).put("archived",archived).put("summary",summary).put("totalMessages",if(summary)totalMessages else messages.size)
+ companion object { fun from(o:JSONObject):Conversation {val a=o.optJSONArray("messages")?:JSONArray();return Conversation(o.getString("id"),o.getString("title"),o.optBoolean("pinned"),o.optLong("updated"),o.optString("modelId","qwen-small"),(0 until a.length()).map{ChatMessage.from(a.getJSONObject(it))},o.optBoolean("archived"),o.optBoolean("summary"),o.optInt("totalMessages",a.length()))} }
 }
 data class DownloadRecord(val id:String,val state:String="queued",val downloaded:Long=0,val total:Long=0,val speed:Long=0,val error:String="",val attempt:Int=0) {
  val percent get()=if(total>0)(downloaded*100/total).coerceIn(0,100).toInt() else 0
@@ -47,9 +47,9 @@ data class GenerationOptions(val temperature:Float=.7f,val topP:Float=.9f,val to
  fun json()=JSONObject().put("temperature",temperature).put("topP",topP).put("topK",topK).put("maximum",maximum).put("context",context).put("repetition",repetition).put("seed",seed).put("system",system).put("stops",stops)
  companion object {fun from(o:JSONObject)=GenerationOptions(o.optDouble("temperature",.7).toFloat(),o.optDouble("topP",.9).toFloat(),o.optInt("topK",40),o.optInt("maximum",512),o.optInt("context",4096),o.optDouble("repetition",1.1).toFloat(),o.optLong("seed",-1),o.optString("system","You are a helpful offline assistant."),o.optString("stops"))}
 }
-data class Preset(val id:String=newId(),val name:String,val options:GenerationOptions) {
- fun json()=JSONObject().put("id",id).put("name",name).put("options",options.json())
- companion object{fun from(o:JSONObject)=Preset(o.getString("id"),o.getString("name"),GenerationOptions.from(o.getJSONObject("options")))}
+data class Preset(val id:String=newId(),val name:String,val options:GenerationOptions,val icon:String="✦",val description:String="",val modelId:String="") {
+ fun json()=JSONObject().put("id",id).put("name",name).put("options",options.json()).put("icon",icon).put("description",description).put("modelId",modelId)
+ companion object{fun from(o:JSONObject)=Preset(o.getString("id"),o.getString("name"),GenerationOptions.from(o.getJSONObject("options")),o.optString("icon","✦"),o.optString("description"),o.optString("modelId"))}
 }
 data class MediaItem(val id:String=newId(),val file:String,val prompt:String,val negative:String,val model:String,val seed:Long,val width:Int,val height:Int,val steps:Int,val cfg:Float,val created:Long=System.currentTimeMillis(),val favorite:Boolean=false) {
  fun json()=JSONObject().put("id",id).put("file",file).put("prompt",prompt).put("negative",negative).put("model",model).put("seed",seed).put("width",width).put("height",height).put("steps",steps).put("cfg",cfg).put("created",created).put("favorite",favorite)

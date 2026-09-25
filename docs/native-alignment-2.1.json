@@ -1,0 +1,230 @@
+[
+  {
+    "name": "lib/arm64-v8a/libai-chat.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libc++_shared.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libdatastore_shared_counter.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml-base.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml-cpu-android_armv8.0_1.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml-cpu-android_armv8.2_1.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml-cpu-android_armv8.2_2.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml-cpu-android_armv8.6_1.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml-cpu-android_armv9.0_1.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml-cpu-android_armv9.2_1.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml-cpu-android_armv9.2_2.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libggml.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libllama.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libomp.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/arm64-v8a/libpocket-diffusion.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/x86_64/libai-chat.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/x86_64/libc++_shared.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/x86_64/libdatastore_shared_counter.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/x86_64/libggml-base.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/x86_64/libggml-cpu.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/x86_64/libggml.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/x86_64/libllama.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  },
+  {
+    "name": "lib/x86_64/libpocket-diffusion.so",
+    "loadAlignments": [
+      16384,
+      16384,
+      16384,
+      16384
+    ],
+    "passed": true
+  }
+]

@@ -19,7 +19,7 @@ class FullTextGenerationTest {
   val oldOptions=g.settings.options;val oldOffline=g.settings.offline
   ActivityScenario.launch(MainActivity::class.java).use{scenario->
    try{
-    g.settings.set("offline",false);val m=g.model("qwen-small")
+    g.settings.set("offline",false);val testModel=InstrumentationRegistry.getArguments().getString("modelId")?:"qwen-small";val m=g.model(testModel)
     if(!g.verified(m)){
      DownloadService.command(app,"enqueue",m.id)
      withTimeout(600000){while(g.record(m.id)?.state!="complete"){check(g.record(m.id)?.state!="failed"){g.record(m.id)?.error?:"Download failed"};delay(500)}}
@@ -30,11 +30,11 @@ class FullTextGenerationTest {
     lateinit var vm:PlatformViewModel
     scenario.onActivity{vm=it.vm}
     withTimeout(10000){while(!vm.state.value.ready)delay(100)}
-    scenario.onActivity{vm.newChat();vm.selectModel("qwen-small");vm.send("Say hello in one short sentence.")}
+    scenario.onActivity{vm.newChat();vm.selectModel(testModel);vm.send("Say hello in one short sentence.")}
     withTimeout(180000){while(vm.state.value.busy)delay(250)}
     assertEquals("",vm.state.value.error)
     val reply=vm.state.value.chat.messages.last()
-    assertEquals("assistant",reply.role);assertEquals("complete",reply.state);assertTrue(reply.text.isNotBlank());assertTrue(reply.stats.contains("tokens"))
+    assertEquals("assistant",reply.role);assertEquals("complete",reply.state);assertTrue(reply.text.isNotBlank());assertTrue(reply.stats.contains("tokens"));InstrumentationRegistry.getInstrumentation().sendStatus(2,android.os.Bundle().apply{putString("performance",reply.stats);putString("model",testModel)})
     assertTrue(g.conversations().any{it.id==vm.state.value.chat.id&&it.messages.last().text==reply.text})
    }finally{g.settings.options=oldOptions;g.settings.set("offline",oldOffline);g.runtime.unload()}
   }

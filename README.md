@@ -1,4 +1,4 @@
-# Pocket AI 2.0 preview
+# Pocket AI 2.1 preview
 
 Private Android AI for the iQOO Z10 Turbo Pro (12 GB RAM). Android 13+, ARM64; x86_64 included for emulator QA. No account, API key, paid service, analytics, or cloud inference.
 
@@ -6,8 +6,11 @@ Private Android AI for the iQOO Z10 Turbo Pro (12 GB RAM). Android 13+, ARM64; x
 1. Install the preview APK over the existing version to preserve local data. Do not uninstall first.
 2. Open Models and start with Qwen3 0.6B (639 MB). Downloads default to Wi-Fi, continue through a foreground service, and verify SHA-256 before installation.
 3. Load the model in Chat. Internet is unnecessary after installation. Settings includes an offline-only mode.
-4. Use History to reopen conversations. New Chat preserves previous conversations.
+4. Use Library to reopen conversations. New Chat preserves previous conversations.
 5. Create → Image provides experimental local SD 1.5 generation. Download is about 1.75 GB; memory estimates are conservative and performance is unvalidated on the target phone. Video is unavailable because no validated mobile backend is enabled.
+
+## New in 2.1
+Home dashboard, assistants, prompt templates, nine catalog options, Hugging Face discovery, model favorites, local backup/restore, archive, improved Markdown and secure opt-in update handling. See [the implementation report](docs/IMPLEMENTATION-2.1.md) for tested scope and limitations.
 
 ## Features
 - Chat history, rename, pin, search, edit/resend, regenerate, stop, continue, copy, export and share.
@@ -24,7 +27,7 @@ Open android in Android Studio, or run ./build.ps1 from PowerShell. Requires SDK
 
 Modules: app (UI/data/downloads/compatibility), lib (llama.cpp JNI text runtime), diffusion (isolated stable-diffusion.cpp JNI image runtime). Native revisions are pinned as Git submodules; KleidiAI is in vendor.
 
-See docs/AUDIT.md, docs/IMPLEMENTATION_REPORT.md and VALIDATION.md for evidence, limitations and pending phone tests. This is a debug-signed preview, not a production-certified or Play Store release.
+See docs/AUDIT.md, docs/IMPLEMENTATION-2.1.md and VALIDATION.md for evidence, limitations and pending phone tests. This is a release-variant preview signed with the existing debug identity, not a production-certified or Play Store release.
 
 ## Sources
 - [llama.cpp](https://github.com/ggml-org/llama.cpp), MIT

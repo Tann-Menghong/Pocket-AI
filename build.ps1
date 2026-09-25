@@ -7,13 +7,13 @@ if (-not (Test-Path -LiteralPath $javaExe)) { throw 'Install Android Studio or s
 $gradleHome = Join-Path $env:USERPROFILE '.gradle'
 $env:GRADLE_USER_HOME = $gradleHome
 $env:ANDROID_USER_HOME = Join-Path $env:USERPROFILE '.android'
-$gradleArgs = @('-classpath', 'gradle/wrapper/gradle-wrapper.jar', 'org.gradle.wrapper.GradleWrapperMain', ':app:assembleDebug', '--console=plain', '--max-workers=4')
+$gradleArgs = @('-classpath', 'gradle/wrapper/gradle-wrapper.jar', 'org.gradle.wrapper.GradleWrapperMain', ':app:assembleRelease', '--console=plain', '--max-workers=4')
 if ($Offline) { $gradleArgs += '--offline' }
 Push-Location -LiteralPath $projectDir
 try {
     & $javaExe @gradleArgs
     if ($LASTEXITCODE -ne 0) { throw 'Android build failed. Review the Gradle output.' }
-    Copy-Item -LiteralPath 'app/build/outputs/apk/debug/app-debug.apk' -Destination (Join-Path $PSScriptRoot 'PocketAI-v2-preview.apk')
+    Copy-Item -LiteralPath 'app/build/outputs/apk/release/app-release.apk' -Destination (Join-Path $PSScriptRoot 'PocketAI-2.1.0-preview.apk')
     if ($Lint) {
         $lintArgs = @('-classpath', 'gradle/wrapper/gradle-wrapper.jar', 'org.gradle.wrapper.GradleWrapperMain', ':app:lintDebug', '--console=plain')
         if ($Offline) { $lintArgs += '--offline' }

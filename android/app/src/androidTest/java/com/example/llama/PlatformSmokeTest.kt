@@ -14,7 +14,7 @@ import org.junit.runner.RunWith
 class PlatformSmokeTest {
  private val app get()=InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as PocketApplication
  @Test fun libraryAndSettingsPersist()=runBlocking {
-  val g=app.graph;g.ready.await();assertEquals(4,g.models.value.size)
+  val g=app.graph;g.ready.await();assertTrue(g.models.value.size>=9)
   val c=Conversation(title="QA roundtrip",messages=listOf(ChatMessage(role="user",text="Hello 世界 👋")))
   try{g.db.put("chat",c.id,c.json());assertEquals(c,Conversation.from(g.db.get("chat",c.id)!!))}finally{g.db.remove("chat",c.id)}
   val old=g.settings.string("profile","Balanced");try{g.settings.set("profile","Battery Saver");assertEquals("Battery Saver",Settings(app).profile)}finally{g.settings.set("profile",old)}
@@ -22,7 +22,7 @@ class PlatformSmokeTest {
  @Test fun screensSurviveRecreation(){
   app.graph.settings.set("onboarded",true)
   ActivityScenario.launch(MainActivity::class.java).use{scenario->
-   for(screen in listOf("Chat","Models","Downloads","Create","History","Settings")){
+   for(screen in listOf("Home","Chat","Models","Downloads","Create","History","Settings","Prompts","Assistants","Updates","Model updates")){
     scenario.onActivity{it.vm.navigate(screen)}
     InstrumentationRegistry.getInstrumentation().waitForIdleSync()
     scenario.recreate()

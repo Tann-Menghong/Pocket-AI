@@ -22,7 +22,7 @@ import java.nio.file.StandardCopyOption
 import java.util.concurrent.Executors
 
 data class AppState(
- val ready:Boolean=false,val screen:String="Chat",val chat:Conversation=Conversation(),val conversations:List<Conversation> = emptyList(),
+ val ready:Boolean=false,val screen:String="Home",val chat:Conversation=Conversation(),val conversations:List<Conversation> = emptyList(),
  val media:List<MediaItem> = emptyList(),val presets:List<Preset> = emptyList(),val busy:Boolean=false,val status:String="Opening your library...",
  val progress:Int=-1,val error:String="",val loaded:String="",val revision:Int=0
 )
@@ -40,14 +40,15 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
  var createPrompt=""
  var negativePrompt=""
  var createMode="Text"
- private var currentScreen="Chat"
+ private var currentScreen="Home"
  init{
   viewModelScope.launch{
    try{
     graph.ready.await()
     withContext(Dispatchers.IO){
      val all=graph.conversations()
-     val active=all.firstOrNull{it.id==graph.settings.string("activeChat")}?:all.firstOrNull()?:Conversation(modelId=graph.settings.string("defaultModel","qwen-small"))
+     val selected=all.firstOrNull{it.id==graph.settings.string("activeChat")}?:all.firstOrNull()
+     val active=selected?.let{graph.fullChat(it.id)}?:Conversation(modelId=graph.settings.string("defaultModel","qwen-small"))
      mutable.update{it.copy(ready=true,chat=active,conversations=all,presets=presets(),media=graph.media(),status="Private by default. Ready when you are.")}
     }
    }catch(e:Exception){error("Your library could not be opened. Existing data was preserved. "+e.message)}
@@ -63,9 +64,10 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
  private fun work(block:suspend()->Unit){viewModelScope.launch(Dispatchers.IO){try{graph.ready.await();block();refresh()}catch(e:Exception){error(e.message?:"The operation could not be completed.")}}}
  private suspend fun save(chat:Conversation){withContext(Dispatchers.IO){graph.db.put("chat",chat.id,chat.json())};graph.settings.set("activeChat",chat.id)}
  fun newChat(){if(state.value.busy)return;draft="";val c=Conversation(modelId=graph.settings.string("defaultModel","qwen-small"));mutable.update{it.copy(chat=c,screen="Chat",status="New conversation")};work{save(c)}}
- fun openChat(c:Conversation){if(state.value.busy){error("Stop generation before opening another conversation.");return};draft="";mutable.update{it.copy(chat=c,screen="Chat")};graph.settings.set("activeChat",c.id)}
- fun rename(c:Conversation,title:String){if(state.value.busy)return;val updated=c.copy(title=title.trim().take(100).ifBlank{"Untitled"});if(c.id==state.value.chat.id)mutable.update{it.copy(chat=updated)};work{save(updated)}}
- fun pin(c:Conversation){if(state.value.busy)return;val updated=c.copy(pinned=!c.pinned);if(c.id==state.value.chat.id)mutable.update{it.copy(chat=updated)};work{graph.db.put("chat",c.id,updated.json())}}
+ fun openChat(c:Conversation){if(state.value.busy){error("Stop generation before opening another conversation.");return};draft="";work{val full=graph.fullChat(c.id);mutable.update{it.copy(chat=full,screen="Chat")};graph.settings.set("activeChat",c.id)}}
+ fun rename(c:Conversation,title:String){if(state.value.busy)return;work{val updated=graph.fullChat(c.id).copy(title=title.trim().take(100).ifBlank{"Untitled"});if(c.id==state.value.chat.id)mutable.update{it.copy(chat=updated)};save(updated)}}
+ fun archive(c:Conversation){if(state.value.busy)return;work{val full=graph.fullChat(c.id);val updated=full.copy(archived=!full.archived);if(c.id==state.value.chat.id)mutable.update{it.copy(chat=updated)};graph.db.put("chat",c.id,updated.json())}}
+ fun pin(c:Conversation){if(state.value.busy)return;work{val full=graph.fullChat(c.id);val updated=full.copy(pinned=!full.pinned);if(c.id==state.value.chat.id)mutable.update{it.copy(chat=updated)};graph.db.put("chat",c.id,updated.json())}}
  fun deleteChat(c:Conversation){if(state.value.busy)return;work{graph.db.remove("chat",c.id);if(state.value.chat.id==c.id)mutable.update{it.copy(chat=Conversation(modelId=graph.settings.string("defaultModel","qwen-small")))}}}
  fun clearChat(){if(state.value.busy)return;val c=state.value.chat.copy(messages=emptyList());mutable.update{it.copy(chat=c)};work{save(c)}}
  fun clearHistory(){if(state.value.busy)return;work{graph.db.transaction{graph.conversations().forEach{graph.db.remove("chat",it.id)}};mutable.update{it.copy(chat=Conversation())}}}
@@ -87,7 +89,8 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
   if(!runtime.isLoaded(graph.file(m).path,graph.settings.options.context))guard(m) else check(Hardware.detect(getApplication()).thermal<PowerManager.THERMAL_STATUS_SEVERE){"Let your phone cool before generating."}
   if(!graph.verified(m)){mutable.update{it.copy(status="Verifying installed model...")};graph.fileLock.withLock{graph.verify(m)}}
   loading=true
-  try{runtime.load(graph.file(m).path,options())}finally{loading=false}
+  val monitor=viewModelScope.launch{while(isActive){mutable.update{it.copy(progress=runtime.loadProgress(),status="Loading model · "+runtime.loadProgress()+"%")};delay(250)}}
+  try{runtime.load(graph.file(m).path,options())}finally{monitor.cancel();loading=false;mutable.update{it.copy(progress=-1)}}
   mutable.update{it.copy(loaded=m.id)}
  }
  private fun begin(status:String,block:suspend()->Unit){
@@ -125,7 +128,8 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
    val m=graph.model(c.modelId);loadText(m)
    val o=graph.settings.options
    val history=c.messages.dropLast(1).takeLast(100).map{RuntimeMessage(it.role,it.text)}
-   val messages=listOf(RuntimeMessage("system",o.system+" /no_think"))+history.dropLast(1)+history.last().copy(text=history.last().text+" /no_think")
+   val suffix=if(m.architecture=="qwen3")" /no_think" else ""
+   val messages=listOf(RuntimeMessage("system",o.system+suffix))+history.dropLast(1)+history.last().copy(text=history.last().text+suffix)
    val out=StringBuilder();val started=SystemClock.elapsedRealtime();var lastSave=started;var lastUi=started;var stoppedBySequence=false
    mutable.update{it.copy(status="Generating on your phone...")}
    runtime.generate(messages,o.maximum,options()).collect{piece->
@@ -153,8 +157,8 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
  fun download(action:String,id:String?=null){try{DownloadService.command(getApplication(),action,id)}catch(e:Exception){error("Android could not start the download. Reopen the app and try again.")}}
  fun deleteModel(m:ModelSpec){if(state.value.busy){error("Stop generation before deleting a model.");return};work{
   check(graph.record(m.id)?.state !in setOf("downloading","verifying","queued")){"Pause or cancel this download before deleting."}
-  graph.inferenceLock.withLock{runtime.unload()};mutable.update{it.copy(loaded="")}
-  graph.fileLock.withLock{for(f in listOf(graph.file(m),graph.partial(m),File(graph.file(m).path+".verified")))check(!f.exists()||f.delete()){"Could not delete the selected file."}}
+  graph.inferenceLock.withLock{runtime.unload();mutable.update{it.copy(loaded="")}
+  graph.fileLock.withLock{for(f in listOf(graph.file(m),graph.partial(m),File(graph.file(m).path+".verified")))check(!f.exists()||f.delete()){"Could not delete the selected file."}}}
   graph.db.remove("download",m.id)
   if(m.imported){graph.db.remove("model",m.id);graph.models.value=graph.models.value.filter{it.id!=m.id};if(state.value.chat.modelId==m.id)selectModel("qwen-small")}
   graph.refreshDownloads()
@@ -179,25 +183,26 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
    }finally{temp.delete()}
   }}
  }}
- fun applyPreset(p:Preset){graph.settings.options=p.options;mutable.update{it.copy(status="Preset: "+p.name,revision=it.revision+1)}}
+ fun applyPreset(p:Preset){if(state.value.busy)return;graph.settings.options=p.options;if(p.modelId.isNotBlank()&&graph.models.value.any{it.id==p.modelId&&it.kind=="text"})selectModel(p.modelId);mutable.update{it.copy(status="Preset: "+p.name,revision=it.revision+1)}}
  fun savePreset(p:Preset)=work{p.options.validate();graph.db.put("preset",p.id,p.json())}
  fun deletePreset(p:Preset)=work{graph.db.remove("preset",p.id)}
  fun favoriteMedia(m:MediaItem)=work{graph.db.put("media",m.id,m.copy(favorite=!m.favorite).json())}
  fun deleteMedia(m:MediaItem)=work{val f=File(graph.mediaDir,m.file);check(f.canonicalFile.parentFile==graph.mediaDir.canonicalFile);check(!f.exists()||f.delete()){"Could not delete this image."};graph.db.remove("media",m.id)}
  fun clearMedia()=work{graph.media().forEach{m->val f=File(graph.mediaDir,m.file);if(!f.exists()||f.delete())graph.db.remove("media",m.id)}}
- fun clearCache()=work{getApplication<Application>().cacheDir.listFiles().orEmpty().filter{it.isFile}.forEach{it.delete()}}
+ fun clearCache()=work{val dir=File(getApplication<Application>().cacheDir,"exports");dir.listFiles().orEmpty().filter{it.isFile}.forEach{it.delete()}}
  fun imageGenerate(prompt:String,negative:String,width:Int,height:Int,steps:Int,cfg:Float,seed:Long,count:Int){
   if(prompt.isBlank()||state.value.busy)return
   begin("Preparing image runtime. First load can take time..."){
    runtime.unload();mutable.update{it.copy(loaded="")}
-   val m=graph.model("sd15");guard(m);if(!graph.verified(m))graph.fileLock.withLock{graph.verify(m)}
+   val m=graph.model(graph.settings.string("defaultImage","sd15"));check(m.kind=="image");guard(m);if(!graph.verified(m))graph.fileLock.withLock{graph.verify(m)}
    require(width in 256..512&&height in 256..512&&width%64==0&&height%64==0&&steps in 1..30&&count in 1..3&&cfg in 1f..12f)
    withContext(imageDispatcher){
     val runner=image?:ImageRuntime().also{image=it}
     repeat(count){index->
      currentCoroutineContext().ensureActive();guard(m)
      val actualSeed=if(seed<0)java.security.SecureRandom().nextLong().ushr(1)else seed+index
-     val monitor=viewModelScope.launch {while(isActive){mutable.update{it.copy(progress=runner.progress(),status="Image ${index+1}/$count · CPU generation · ${runner.progress()}%")};delay(500)}}
+     val imageStarted=SystemClock.elapsedRealtime()
+     val monitor=viewModelScope.launch {while(isActive){mutable.update{it.copy(progress=runner.progress(),status="Image ${index+1}/$count · CPU generation · ${runner.progress()}% · "+((SystemClock.elapsedRealtime()-imageStarted)/1000)+" s") };delay(500)}}
      try{
       val pixels=runner.generate(graph.file(m).path,prompt,negative,width,height,steps,cfg,actualSeed,ResourcePolicy.threads(graph.settings.profile,Runtime.getRuntime().availableProcessors()))
       currentCoroutineContext().ensureActive()
