@@ -127,7 +127,7 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
    save(c)
    val m=graph.model(c.modelId);loadText(m)
    val o=graph.settings.options
-   val history=c.messages.dropLast(1).takeLast(100).map{RuntimeMessage(it.role,it.text)}
+   val history=c.messages.dropLast(1).takeLast(100).dropWhile{it.role!="user"}.map{RuntimeMessage(it.role,it.text)}
    val suffix=if(m.architecture=="qwen3")" /no_think" else ""
    val messages=listOf(RuntimeMessage("system",o.system+suffix))+history.dropLast(1)+history.last().copy(text=history.last().text+suffix)
    val out=StringBuilder();val started=SystemClock.elapsedRealtime();var lastSave=started;var lastUi=started;var stoppedBySequence=false

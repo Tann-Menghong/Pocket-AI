@@ -11,6 +11,20 @@ import org.junit.runner.RunWith
 import java.io.*
 @RunWith(AndroidJUnit4::class)
 class LibraryUpgradeTest{
+
+ @Test fun searchFindsOlderUnicodeMessagesWithoutExpandingSummaries()=runBlocking{
+  g.ready.await()
+  val c=Conversation(title="Search QA",messages=listOf(ChatMessage(role="user",text="Unique old needle ខ្មែរ 100%_"))+(1..8).map{ChatMessage(role="assistant",text="Later "+it)})
+  try{
+   g.db.put("chat",c.id,c.json())
+   assertTrue(g.db.searchChats("Unique old needle").any{it.id==c.id})
+   assertTrue(g.db.searchChats("ខ្មែរ 100%_").any{it.id==c.id})
+   assertFalse(g.db.searchChats("absent needle").any{it.id==c.id})
+   val result=g.db.searchChats("Unique old needle").first{it.id==c.id}
+   assertTrue(result.summary);assertEquals(9,result.totalMessages);assertEquals(2,result.messages.size)
+   g.db.remove("chat",c.id);assertFalse(g.db.searchChats("Unique old needle").any{it.id==c.id})
+  }finally{g.db.remove("chat",c.id)}
+ }
  private val g get()=(InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as PocketApplication).graph
  @Test fun summariesPreserveFullMessagesAndBackupMerges()=runBlocking{
   g.ready.await()

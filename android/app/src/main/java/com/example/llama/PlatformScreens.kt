@@ -102,7 +102,7 @@ fun MainActivity.buildAssistants(body:LinearLayout){
 fun MainActivity.globalSearch(){
  inputDialog("Search chats, models and prompts",""){query->
   io("Searching",{val results=mutableListOf<Pair<String,()->Unit>>()
-   vm.state.value.conversations.filter{(it.title+" "+it.messages.joinToString(" "){m->m.text}).contains(query,true)}.take(15).forEach{c->results+=("Chat · "+c.title) to {vm.openChat(c)}}
+   vm.graph.db.searchChats(query,15).forEach{c->results+=("Chat · "+c.title) to {vm.openChat(c)}}
    vm.graph.models.value.filter{(it.name+" "+it.purposes).contains(query,true)}.forEach{m->results+=("Model · "+m.name) to {modelDetails(m)}}
    vm.graph.library.prompts().filter{(it.name+" "+it.text).contains(query,true)}.take(15).forEach{p->results+=("Prompt · "+p.name) to {usePrompt(p)}}
    vm.state.value.media.filter{it.prompt.contains(query,true)}.take(15).forEach{m->results+=("Image · "+m.prompt.take(60)) to {showImage(m)}}
@@ -127,15 +127,22 @@ fun MainActivity.discoverModels(){
  }
 }
 fun MainActivity.buildModelUpdates(body:LinearLayout){
- kit.section(body,"AI model updates","Checks repository metadata. Models are never replaced or downloaded automatically.")
+ kit.section(body,"AI model updates","Text model revisions only. Old files are retained; downloads always require confirmation.")
+ val hub=ModelHub(vm.graph)
  val automatic=MaterialSwitch(this).apply{text="Check model revisions daily (metadata only)";setTextColor(kit.p.text);isChecked=vm.graph.settings.bool("modelAuto");setOnCheckedChangeListener{_,on->vm.graph.settings.set("modelAuto",on);UpdateManager.schedule(vm.graph)}};body.addView(automatic)
  val rows=kit.column()
- body.addView(kit.button("Check now · Internet required"){io("Checking model revisions",{ModelHub(vm.graph).checkUpdates()}){list->
-  rows.removeAllViews();if(list.isEmpty())rows.addView(kit.label("No newer compatible file revisions found.",15))
+ fun render(list:List<ModelSpec>){
+  rows.removeAllViews()
+  if(list.isEmpty())rows.addView(kit.label("No pending revisions in the last check. Check online to refresh.",15))
   list.forEach{m->rows.addView(kit.button(m.name+" · "+bytesLabel(m.bytes),true){
-   confirm("Keep both versions?", "New download: "+bytesLabel(m.bytes)+"\nAdditional storage: "+bytesLabel(m.bytes)+" plus temporary transfer overhead.\nOld model is retained. New revision "+m.revision.take(12)+". Review the source for changes; repository metadata does not certify quality."){io("Adding new revision",{ModelHub(vm.graph).add(m)}){downloadDialog(m)}}
+   confirm("Keep both versions?","New download: "+bytesLabel(m.bytes)+"\nAdditional storage is required; the old model is retained.\nRevision "+m.revision.take(12)+"\nReview the source for changes. Compatibility and available space are checked before download."){
+    io("Adding new revision",{hub.add(m)}){registered->downloadDialog(registered);render(emptyList())}
+   }
   })}
- }});body.addView(rows)
+ }
+ body.addView(kit.button("Check now · Internet required"){io("Checking model revisions",{hub.checkUpdates()}){render(it)}})
+ body.addView(rows)
+ io("Reading saved model checks",{hub.cachedUpdates()}){render(it)}
 }
 fun MainActivity.buildUpdates(body:LinearLayout){
  val g=vm.graph;val u=g.updates

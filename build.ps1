@@ -13,7 +13,7 @@ Push-Location -LiteralPath $projectDir
 try {
     & $javaExe @gradleArgs
     if ($LASTEXITCODE -ne 0) { throw 'Android build failed. Review the Gradle output.' }
-    Copy-Item -LiteralPath 'app/build/outputs/apk/release/app-release.apk' -Destination (Join-Path $PSScriptRoot 'PocketAI-2.1.0-preview.apk')
+    Copy-Item -LiteralPath 'app/build/outputs/apk/release/app-release.apk' -Destination (Join-Path $PSScriptRoot 'PocketAI-2.1.1-preview.apk')
     if ($Lint) {
         $lintArgs = @('-classpath', 'gradle/wrapper/gradle-wrapper.jar', 'org.gradle.wrapper.GradleWrapperMain', ':app:lintDebug', '--console=plain')
         if ($Offline) { $lintArgs += '--offline' }

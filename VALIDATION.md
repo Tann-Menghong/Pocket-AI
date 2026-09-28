@@ -1,3 +1,18 @@
+# Validation — Pocket AI 2.1.1 preview
+
+- Release/debug/instrumentation APK builds, 17 JVM tests and lint passed (2m 50s).
+- 10 Android integration tests passed in 20.275 s, including full-transcript Unicode search and existing navigation, backup and update policies.
+- Real Qwen3 0.6B offline generation passed: 13 tokens, 1.2 tok/s, 10.6 s generation; 22.784 s total test. Emulator timing varies and is not a phone benchmark.
+- Release APK install-over-existing and cold launch passed (1.963 s).
+- Version code 4; version 2.1.1-preview; release variant, not debuggable; original preview signing identity retained.
+- APK: PocketAI-2.1.1-preview.apk, 52,584,352 bytes.
+- SHA-256: 00cbfb3c452fe8eec5b2026fc4662ae12e13f6c8a08d5e95bd8ff395eb3e15e2
+- Signature verification and 16 KB ZIP alignment passed. Native code unchanged from 2.1.0.
+- Lint: 0 errors, 77 warnings. No AAB produced.
+- No physical-device, successful diffusion, newer-APK installer or Qwen2.5 full-inference certification added. The limitations and physical checklist below still apply.
+- See docs/RELIABILITY-2.1.1.md for patch details and docs/IMPLEMENTATION-2.1.md for the full platform report and roadmap.
+
+---
 # Validation — Pocket AI 2.1.0 preview
 
 ## Build and artifact

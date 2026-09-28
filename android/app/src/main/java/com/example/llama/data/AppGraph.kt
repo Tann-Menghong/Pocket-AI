@@ -19,6 +19,27 @@ class PocketDatabase(c:Context):SQLiteOpenHelper(c,File(c.noBackupFilesDir,"pock
  override fun onCreate(db:SQLiteDatabase){db.execSQL("CREATE TABLE records (category TEXT NOT NULL,id TEXT NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(category,id))")}
  override fun onUpgrade(db:SQLiteDatabase,old:Int,new:Int){error("A database migration is required. Your data has not been deleted.")}
  fun all(category:String):List<JSONObject> = readableDatabase.query("records",arrayOf("payload"),"category=?",arrayOf(category),null,null,null).use{c->buildList{while(c.moveToNext())add(JSONObject(c.getString(0)))}}
+
+ fun visitChats(visit:(Conversation)->Unit){
+  readableDatabase.query("records",arrayOf("payload"),"category=?",arrayOf("chat"),null,null,"id").use{cursor->
+   while(cursor.moveToNext())visit(Conversation.from(JSONObject(cursor.getString(0))))
+  }
+ }
+ fun searchChats(query:String,limit:Int=50):List<Conversation>{
+  require(limit in 1..100)
+  val term=query.trim().take(200)
+  if(term.isEmpty())return emptyList()
+  val results=mutableListOf<Conversation>()
+  // Decode one transcript at a time so Unicode and literal punctuation match accurately.
+  readableDatabase.query("records",arrayOf("payload"),"category=?",arrayOf("chat"),null,null,"id").use{cursor->
+   while(cursor.moveToNext()&&results.size<limit){
+    val c=Conversation.from(JSONObject(cursor.getString(0)))
+    if(c.title.contains(term,true)||c.messages.any{it.text.contains(term,true)})
+     results+=c.copy(messages=c.messages.takeLast(2).map{it.copy(text=it.text.take(500))},summary=true,totalMessages=c.messages.size)
+   }
+  }
+  return results.sortedByDescending{it.updated}
+ }
  fun get(category:String,id:String):JSONObject? = readableDatabase.query("records",arrayOf("payload"),"category=? AND id=?",arrayOf(category,id),null,null,null).use{if(it.moveToFirst())JSONObject(it.getString(0))else null}
  private fun rawPut(category:String,id:String,o:JSONObject){val v=ContentValues().apply{put("category",category);put("id",id);put("payload",o.toString())};check(writableDatabase.insertWithOnConflict("records",null,v,SQLiteDatabase.CONFLICT_REPLACE)!=-1L){"Local data could not be saved."}}
  fun put(category:String,id:String,o:JSONObject){if(category!="chat"){rawPut(category,id,o);return};transaction{rawPut(category,id,o);val c=Conversation.from(o);rawPut("chatSummary",id,c.copy(messages=c.messages.takeLast(2).map{it.copy(text=it.text.take(500))},summary=true,totalMessages=c.messages.size).json())}}
@@ -99,7 +120,7 @@ class AppGraph(val app:Application) {
      db.put("meta","presets",JSONObject().put("version",1))
     }
     db.all("download").map{DownloadRecord.from(it)}.filter{it.state in setOf("downloading","verifying","queued")}.forEach{putDownload(it.copy(state="paused",speed=0,error="Interrupted by an app or device restart. Resume when ready."))}
-    db.all("chat").map{Conversation.from(it)}.filter{c->c.messages.any{it.state=="generating"}}.forEach{c->db.put("chat",c.id,c.copy(messages=c.messages.map{if(it.state=="generating")it.copy(state="interrupted")else it}).json())}
+    db.visitChats{c->if(c.messages.any{it.state=="generating"})db.put("chat",c.id,c.copy(messages=c.messages.map{if(it.state=="generating")it.copy(state="interrupted")else it}).json())}
    }
    if(db.get("meta","summaryIndex")==null){db.readableDatabase.query("records",arrayOf("id","payload"),"category=?",arrayOf("chat"),null,null,null).use{cursor->while(cursor.moveToNext()){val c=Conversation.from(JSONObject(cursor.getString(1)));db.put("chatSummary",c.id,c.copy(messages=c.messages.takeLast(2).map{it.copy(text=it.text.take(500))},summary=true,totalMessages=c.messages.size).json())}};db.put("meta","summaryIndex",JSONObject().put("version",1))}
    library.initialize();refreshDownloads();ready.complete(Unit);com.example.llama.updates.UpdateManager.schedule(this@AppGraph)

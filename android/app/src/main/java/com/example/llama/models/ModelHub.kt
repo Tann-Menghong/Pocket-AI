@@ -21,6 +21,16 @@ object RemoteJson {
   }finally{c.disconnect()}
  }
 }
+
+object ModelRevisionPolicy{
+ fun candidates(known:List<ModelSpec>,remote:List<ModelSpec>):List<ModelSpec>{
+  val hashes=known.map{it.sha256}.toSet()
+  return remote.filter{candidate->candidate.sha256 !in hashes&&known.any{old->
+   old.repo==candidate.repo&&old.architecture==candidate.architecture&&old.kind==candidate.kind&&
+    old.remoteFile.ifBlank{old.file}==candidate.remoteFile.ifBlank{candidate.file}
+  }}.distinctBy{it.sha256}
+ }
+}
 class ModelHub(private val g:AppGraph){
  suspend fun search(query:String):List<String>{
   require(query.trim().length in 2..100)
@@ -54,18 +64,20 @@ class ModelHub(private val g:AppGraph){
   require(results.isNotEmpty()){"No supported single-file GGUF models under 6 GB with integrity metadata were found."}
   return results.sortedBy{it.bytes}
  }
- suspend fun add(m:ModelSpec)=withContext(Dispatchers.IO){
+ suspend fun add(m:ModelSpec):ModelSpec=withContext(Dispatchers.IO){
   require(ResourcePolicy.compatibility(m,Hardware.detect(g.app)).allowed)
-  if(g.models.value.any{it.sha256==m.sha256})return@withContext
-  g.db.put("model",m.id,m.json());g.models.value=g.models.value+m
+  g.models.value.firstOrNull{it.sha256==m.sha256}?.let{return@withContext it}
+  g.db.put("model",m.id,m.json());g.models.value=g.models.value+m; m
+ }
+ fun cachedUpdates():List<ModelSpec>{
+  val a=g.db.get("meta","modelUpdates")?.optJSONArray("models")?:return emptyList()
+  return ModelRevisionPolicy.candidates(g.models.value,(0 until a.length()).map{ModelSpec.from(a.getJSONObject(it))})
  }
  suspend fun checkUpdates():List<ModelSpec>{
   val newer=mutableListOf<ModelSpec>()
   for(m in g.models.value.filter{it.kind=="text"&&!it.imported&&it.repo.isNotBlank()}.distinctBy{it.repo}){
    val candidates=inspect(m.repo)
-   for(old in g.models.value.filter{it.repo==m.repo}){
-    candidates.firstOrNull{it.remoteFile==old.remoteFile.ifBlank{old.file}&&it.sha256!=old.sha256}?.let{newer+=it}
-   }
+   newer+=ModelRevisionPolicy.candidates(g.models.value,candidates)
   }
   withContext(Dispatchers.IO){g.db.put("meta","modelUpdates",JSONObject().put("checked",System.currentTimeMillis()).put("models",JSONArray(newer.map{it.json()})))}
   return newer
