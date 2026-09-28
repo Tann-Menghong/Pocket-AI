@@ -63,6 +63,9 @@ object ResourcePolicy {
  fun required(model:ModelSpec,context:Int)=model.memory+if(model.kind=="text") (context-2048).coerceAtLeast(0)*160_000L else 0
  fun compatibility(m:ModelSpec,h:Hardware):Compatibility = when {
   !h.abi.contains("arm64-v8a") && !h.abi.contains("x86_64")->Compatibility(false,"Unsupported","A 64-bit ARM or x86 Android device is required.")
+  m.kind=="text" && m.architecture !in GgufInspector.supported->Compatibility(false,"Unsupported","This text architecture is not enabled in Pocket AI.")
+  m.kind=="image" && m.architecture!="sd1"->Compatibility(false,"Unsupported","Only the curated SD 1 image backend is enabled.")
+  m.kind !in setOf("text","image","video")->Compatibility(false,"Unsupported","No runtime is enabled for this model type.")
   m.kind=="video"->Compatibility(false,"Unsupported","This model is not recommended for this device. No validated mobile video backend is enabled.")
   m.kind=="image" && h.totalRam<10_000_000_000L->Compatibility(false,"Too large","Experimental image generation requires at least 10 GB physical RAM.")
   m.memory+1_500_000_000L>h.totalRam->Compatibility(false,"Too large","This model leaves too little memory for Android.")

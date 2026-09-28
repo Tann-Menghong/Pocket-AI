@@ -17,6 +17,7 @@ import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.llama.core.*
+import com.example.llama.models.ModelBrowse
 import com.example.llama.data.*
 import com.example.llama.ui.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -209,16 +210,31 @@ class MainActivity:AppCompatActivity(){
  private fun buildModels(body:LinearLayout){
   kit.section(body,"Your model library","Only compatible formats. Clear sizes. No model weights inside the app.")
   val h=Hardware.detect(this);body.addView(kit.label("${h.device} · ${bytesLabel(h.totalRam)} RAM\n${bytesLabel(h.availableRam)} free RAM · ${bytesLabel(h.storage)} free storage",13,secondary=true))
-  val search=kit.input("Search models or purposes",query);search.doAfterTextChanged{query=it.toString();renderModels()};body.addView(search)
-  kit.addButtons(body,kit.button("Filter",true){choose("Show models",listOf("All","Installed","Favorites","Compatible","Experimental","Chat","Coding","Reasoning","Writing","Translation","Multilingual","Small & Fast","Image","Video")){modelFilter=it;renderModels()}},kit.button("Import GGUF",true){importLauncher.launch(arrayOf("*/*"))})
+  val search=kit.input("Search name, task, creator or quantization",query);search.doAfterTextChanged{query=it.toString();renderModels()};body.addView(search)
+  kit.addButtons(body,kit.button("Filter",true){choose("Show models",listOf("All","Installed","Favorites","Fits available RAM","Under 1 GB","Compatible","Experimental","Chat","Coding","Reasoning","Writing","Translation","Multilingual","Small & Fast","Image","Video")){modelFilter=it;renderModels()}},kit.button("Import GGUF",true){importLauncher.launch(arrayOf("*/*"))})
   kit.addButtons(body,kit.button("Discover online",true){discoverModels()},kit.button("Model updates",true){vm.navigate("Model updates")})
+  kit.addButtons(body,kit.button("Sort",true){choose("Sort models",listOf("Catalog order","Smallest download","Lowest RAM","Name","Installed first")){vm.graph.settings.set("modelSort",it);renderModels()}},kit.button("Free model guide",true){freeModelGuide()})
   body.addView(kit.label("Fast: smallest supported text model. Balanced: mid-size. Quality: larger model with higher estimated RAM use. These are relative recommendations, not phone benchmarks.",12,secondary=true))
   modelRows=kit.column();body.addView(modelRows);renderModels()
  }
  private fun renderModels(){
   val host=modelRows?:return;host.removeAllViews()
   val h=Hardware.detect(this)
-  val shownModels=vm.graph.models.value.filter{m->(query.isBlank()||(m.name+" "+m.purposes).contains(query,true))&&(modelFilter=="All"||(modelFilter=="Favorites"&&vm.graph.settings.bool("favorite."+m.id))||(modelFilter=="Compatible"&&ResourcePolicy.compatibility(m,h).allowed)||(modelFilter=="Experimental"&&m.experimental)||(modelFilter=="Chat"&&m.kind=="text")||(modelFilter=="Installed"&&vm.graph.installed(m))||m.purposes.contains(modelFilter,true)||(modelFilter=="Image"&&m.kind=="image"))}
+  val matching=vm.graph.models.value.filter{m->ModelBrowse.search(m,query)&&when(modelFilter){
+   "All"->true
+   "Favorites"->vm.graph.settings.bool("favorite."+m.id)
+   "Fits available RAM"->ModelBrowse.ready(m,h,vm.graph.settings.options.context)
+   "Under 1 GB"->m.bytes<1_000_000_000L
+   "Compatible"->ResourcePolicy.compatibility(m,h).allowed
+   "Experimental"->m.experimental
+   "Chat"->m.kind=="text"
+   "Installed"->vm.graph.installed(m)
+   "Image"->m.kind=="image"
+   "Video"->m.kind=="video"
+   else->m.purposes.contains(modelFilter,true)
+  }}
+  val shownModels=ModelBrowse.sort(matching,vm.graph.settings.string("modelSort","Catalog order")){vm.graph.installed(it)}
+  host.addView(kit.label(shownModels.size.toString()+" models · "+modelFilter+" · "+vm.graph.settings.string("modelSort","Catalog order"),13,secondary=true))
   if(shownModels.isEmpty())host.addView(kit.label("No models match. Try a different filter.",16,secondary=true))
   shownModels.forEach{m->
    val card=kit.card();val compat=ResourcePolicy.compatibility(m,h);val record=vm.graph.downloads.value.firstOrNull{it.id==m.id}
@@ -226,6 +242,7 @@ class MainActivity:AppCompatActivity(){
    card.addView(kit.label(m.creator+" · "+m.kind.uppercase(),12,secondary=true))
    card.addView(kit.label("${bytesLabel(m.bytes)} · GGUF ${m.quantization}\n${compat.label} · Estimated runtime RAM ${bytesLabel(ResourcePolicy.required(m,vm.graph.settings.options.context))}",14))
    if(vm.graph.settings.string("modelDensity","Comfortable")!="Compact")card.addView(kit.label(m.purposes,12,secondary=true))
+   if(compat.allowed&&!ModelBrowse.ready(m,h,vm.graph.settings.options.context))card.addView(kit.label("Low available RAM for current context. Close other apps or lower context before loading.",12,secondary=true))
    if(record!=null&&record.state!="complete")card.addView(kit.label("${record.state} · ${record.percent}%",12))
    kit.addButtons(card,kit.button(if(vm.graph.installed(m))"Use model" else if(record?.state in setOf("queued","downloading","verifying"))"Downloading" else "Download"){
     if(vm.graph.installed(m)){if(m.kind=="text"){vm.selectModel(m.id);vm.navigate("Chat")}else{vm.graph.settings.set("defaultImage",m.id);vm.createMode="Image";vm.navigate("Create")}}
@@ -259,7 +276,7 @@ class MainActivity:AppCompatActivity(){
    card.addView(kit.label("${bytesLabel(d.downloaded)} / ${bytesLabel(d.total)} · ${bytesLabel(d.speed)}/s"+if(d.remainingSeconds>=0)" · about ${d.remainingSeconds/60} min remaining" else "",12,secondary=true))
    if(d.error.isNotBlank())card.addView(kit.label(d.error,13,secondary=true))
    if(d.state!="complete")kit.addButtons(card,kit.button(if(d.state in setOf("queued","downloading","verifying"))"Pause" else "Resume / retry"){vm.download(if(d.state in setOf("queued","downloading","verifying"))"pause" else "enqueue",d.id)},kit.button("Cancel",true){confirm("Cancel this download?","The incomplete file will be removed."){vm.download("cancel",d.id)}})
-   else card.addView(kit.button("Use model",true){if(m.kind=="text"){vm.selectModel(m.id);vm.navigate("Chat")}else{vm.createMode="Image";vm.navigate("Create")}})
+   else card.addView(kit.button("Use model",true){if(m.kind=="text"){vm.selectModel(m.id);vm.navigate("Chat")}else{vm.graph.settings.set("defaultImage",m.id);vm.createMode="Image";vm.navigate("Create")}})
    host.addView(card)
   }
  }

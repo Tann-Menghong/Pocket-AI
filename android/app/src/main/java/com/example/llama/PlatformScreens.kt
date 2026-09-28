@@ -136,7 +136,7 @@ fun MainActivity.buildModelUpdates(body:LinearLayout){
   if(list.isEmpty())rows.addView(kit.label("No pending revisions in the last check. Check online to refresh.",15))
   list.forEach{m->rows.addView(kit.button(m.name+" · "+bytesLabel(m.bytes),true){
    confirm("Keep both versions?","New download: "+bytesLabel(m.bytes)+"\nAdditional storage is required; the old model is retained.\nRevision "+m.revision.take(12)+"\nReview the source for changes. Compatibility and available space are checked before download."){
-    io("Adding new revision",{hub.add(m)}){registered->downloadDialog(registered);render(emptyList())}
+    io("Adding new revision",{hub.add(m)}){registered->downloadDialog(registered);render(list.filter{it.sha256!=registered.sha256})}
    }
   })}
  }
@@ -164,7 +164,7 @@ fun MainActivity.buildUpdates(body:LinearLayout){
   card.addView(kit.button("Cancel / remove download",true){u.cancelDownload();status.text="Update download removed."});body.addView(card)
  }
  body.addView(kit.button("Refresh download status",true){status.text=u.progress()})
- body.addView(kit.button("Current version · What's new",true){MaterialAlertDialogBuilder(this).setTitle("Pocket AI 2.1").setMessage("Home dashboard, prompt templates, assistant profiles, model discovery and favorites, safe app updates, model revision checks, local backup/restore and nine curated model choices. Image generation remains experimental; video is unavailable.").setPositiveButton("Close",null).show()})
+ body.addView(kit.button("Current version · What's new",true){MaterialAlertDialogBuilder(this).setTitle("Pocket AI "+u.current.versionName).setMessage("Expanded free-model catalog, size and memory filters, persistent sorting, multi-word search and stronger compatibility checks. Image generation remains experimental; video is unavailable.").setPositiveButton("Close",null).show()})
 }
 fun MainActivity.showImage(m:MediaItem){
  val image=ImageView(this).apply{adjustViewBounds=true;contentDescription=m.prompt}
@@ -172,5 +172,16 @@ fun MainActivity.showImage(m:MediaItem){
   image.setImageBitmap(bitmap)
   MaterialAlertDialogBuilder(this).setTitle(m.prompt.take(100)).setView(kit.scroll(image)).setMessage(m.width.toString()+" × "+m.height+" · "+m.steps+" steps · CFG "+m.cfg+"\nSeed "+m.seed+"\n"+m.model+"\nNegative: "+m.negative)
    .setPositiveButton("Share"){_,_->shareImage(m)}.setNeutralButton("Copy prompt"){_,_->(getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(ClipData.newPlainText("Image prompt",m.prompt))}.setNegativeButton("Close",null).show()
+ }
+}
+
+fun MainActivity.freeModelGuide(){
+ val choices=listOf("Qwen · multilingual and coding","SmolLM2 · compact English models","Model selection tips")
+ choose("Free models · source links require internet",choices){choice->
+  when(choice){
+   choices[0]->openSource("https://huggingface.co/Qwen")
+   choices[1]->openSource("https://huggingface.co/HuggingFaceTB")
+   else->MaterialAlertDialogBuilder(this).setTitle("Choose a model").setMessage("Start small, then compare responses. The new curated text downloads use Apache-2.0 licenses and need no paid API. SmolLM2 focuses on English; Khmer quality is not validated. Q4, Q5, Q6 and Q8 are precision variants, not different assistants. More bits use more storage and RAM and do not guarantee better answers. Use Fits available RAM as an estimate, not a benchmark. All new choices remain experimental until qualified on your phone. Websites offering free cloud chat cannot automatically be used offline.").setPositiveButton("Close",null).show()
+  }
  }
 }

@@ -1,3 +1,19 @@
+# Validation — Pocket AI 2.2.0 preview
+
+- Build passed: release, debug, instrumentation APKs, JVM tests and lint (1m 39s). Initial missing import was fixed before this passing build.
+- 19 JVM tests and 11 emulator integration tests passed; integration duration 23.98s.
+- New SmolLM2 360M: complete 386,404,992-byte download, SHA-256 verification, offline inference and response persistence passed in 201.736s including download. Output: 2 tokens, 3.8 tok/s, 0.5s. This is a smoke test, not a quality or sustained-speed benchmark.
+- Existing Qwen3 0.6B: offline inference passed; 13 tokens, 6.9 tok/s, 1.9s generation; 11.276s test.
+- Release APK install-over-existing and cold launch passed in 1.631s. Model manager visually reviewed; screenshot docs/pocket-models-2.2.png.
+- APK: PocketAI-2.2.0-preview.apk, 52,594,456 bytes; versionCode 5; versionName 2.2.0-preview.
+- SHA-256: 8eb66ae118397502116e650b87f6133f2e92161f8e699ad599acea00c0ec713d
+- Release variant, not debuggable; previous preview/debug signing identity retained. Signature verification and 16 KB ZIP alignment passed. Native code unchanged; no AAB.
+- Lint: 0 errors, 77 warnings. SDK XML tool-version warning remains.
+- Five other new model choices: source metadata and compatibility policy validated; full inference not tested. All six remain experimental for physical-device use.
+- Image generation remains unqualified; no video backend. No physical iQOO, long-chat thermal, newer-APK installation or full low-storage/reboot certification added.
+- See docs/UPDATE-2.2.md for source links, new models, implemented improvements and ten next priorities.
+
+---
 # Validation — Pocket AI 2.1.1 preview
 
 - Release/debug/instrumentation APK builds, 17 JVM tests and lint passed (2m 50s).

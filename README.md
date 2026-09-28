@@ -1,4 +1,4 @@
-# Pocket AI 2.1.1 preview
+# Pocket AI 2.2 preview
 
 Private Android AI for the iQOO Z10 Turbo Pro (12 GB RAM). Android 13+, ARM64; x86_64 included for emulator QA. No account, API key, paid service, analytics, or cloud inference.
 
@@ -8,6 +8,9 @@ Private Android AI for the iQOO Z10 Turbo Pro (12 GB RAM). Android 13+, ARM64; x
 3. Load the model in Chat. Internet is unnecessary after installation. Settings includes an offline-only mode.
 4. Use Library to reopen conversations. New Chat preserves previous conversations.
 5. Create → Image provides experimental local SD 1.5 generation. Download is about 1.75 GB; memory estimates are conservative and performance is unvalidated on the target phone. Video is unavailable because no validated mobile backend is enabled.
+
+## New in 2.2
+Six more free downloads (15 catalog choices), SmolLM2 English models, tiny coding model, size/RAM filters, sorting, better search and a free-model guide. [Models, changes and 10 next improvements](docs/UPDATE-2.2.md).
 
 ## Reliability patch 2.1.1
 Full-transcript global search, bounded startup recovery, corrected model revision handling and cached update results. See [patch validation](docs/RELIABILITY-2.1.1.md).

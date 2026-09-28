@@ -1,0 +1,239 @@
+[
+  {
+    "license": "apache-2.0",
+    "revision": "23749fefcc72300e3a2ad315e1317431b06b590a",
+    "architecture": "qwen3",
+    "repo": "Qwen/Qwen3-0.6B-GGUF",
+    "files": []
+  },
+  {
+    "license": "apache-2.0",
+    "revision": "90862c4b9d2787eaed51d12237eafdfe7c5f6077",
+    "architecture": "qwen3",
+    "repo": "Qwen/Qwen3-1.7B-GGUF",
+    "files": []
+  },
+  {
+    "license": "apache-2.0",
+    "revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+    "architecture": "qwen3",
+    "repo": "Qwen/Qwen3-4B-GGUF",
+    "files": [
+      {
+        "rfilename": "Qwen3-4B-Q4_K_M.gguf",
+        "blobId": "1206cf64b64392ba533af8e1e6d793ac290c8111",
+        "size": 2497280256,
+        "lfs": {
+          "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+          "size": 2497280256,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "Qwen3-4B-Q5_K_M.gguf",
+        "blobId": "468359ad3ddc5efd775cf735dde3b3252e14732f",
+        "size": 2889513184,
+        "lfs": {
+          "sha256": "aca596860e8cb40af6539e3f2ea40df305f42515deac56d49c08d39a02e6533f",
+          "size": 2889513184,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "Qwen3-4B-Q6_K.gguf",
+        "blobId": "157d45051bd408ce7b1d6bf6bea193d85f4a4a4f",
+        "size": 3306260704,
+        "lfs": {
+          "sha256": "8a08533841623c2a689763b9318d8e27b3e052ad5b38015d4be4c04fa96f68a3",
+          "size": 3306260704,
+          "pointerSize": 135
+        }
+      }
+    ]
+  },
+  {
+    "license": "apache-2.0",
+    "revision": "ebb2015119c907b064c512bf053e945850b5875f",
+    "architecture": "qwen2",
+    "repo": "Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF",
+    "files": [
+      {
+        "rfilename": "qwen2.5-coder-0.5b-instruct-q4_k_m.gguf",
+        "blobId": "950ad865ccb1a7a0f30a578037df731752d7e194",
+        "size": 491400064,
+        "lfs": {
+          "sha256": "1d9614638d18024d0fbb36575a15f1302a3adf044df10345688ec4f6e1c4ff32",
+          "size": 491400064,
+          "pointerSize": 134
+        }
+      },
+      {
+        "rfilename": "qwen2.5-coder-0.5b-instruct-q5_k_m.gguf",
+        "blobId": "12f3c77a7062d62ec59928c5cc67bc05867b20bc",
+        "size": 522186624,
+        "lfs": {
+          "sha256": "7f6a0b1670c9fff2cccbf8746dff19bb9c023708c8ca7702e4d49805985ecbac",
+          "size": 522186624,
+          "pointerSize": 134
+        }
+      },
+      {
+        "rfilename": "qwen2.5-coder-0.5b-instruct-q6_k.gguf",
+        "blobId": "c5571d3778030eed65d201a6ad4d057a84f738e4",
+        "size": 650379136,
+        "lfs": {
+          "sha256": "c2adc7ad8b1733efd153af0f6c0364fd8fffce020a4ddf64fb8846b800c4a4e6",
+          "size": 650379136,
+          "pointerSize": 134
+        }
+      }
+    ]
+  },
+  {
+    "license": "other",
+    "revision": "f74adce6aa16316c625447af059dbebe4983757c",
+    "architecture": "qwen2",
+    "repo": "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF",
+    "files": [
+      {
+        "rfilename": "qwen2.5-coder-3b-instruct-q4_k_m.gguf",
+        "blobId": "e57e47b88790d69a15dfb25e1a7d0da0f604f5c4",
+        "size": 2104932800,
+        "lfs": {
+          "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+          "size": 2104932800,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "qwen2.5-coder-3b-instruct-q5_k_m.gguf",
+        "blobId": "0b3e4b0faac7ca7244914fad3a4b95d76281ff3b",
+        "size": 2438740416,
+        "lfs": {
+          "sha256": "eb863f2a1a9b67e33bbf2dad98ea09c03b71c8052aeb4835171cf6f7a7a12db4",
+          "size": 2438740416,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "qwen2.5-coder-3b-instruct-q6_k.gguf",
+        "blobId": "817a04780f032d186cc80e701d36b56acad97014",
+        "size": 2793411008,
+        "lfs": {
+          "sha256": "72491febb8b149abacfd15a5e94e354b5fb6bda6baffc292f9aec270b94596c8",
+          "size": 2793411008,
+          "pointerSize": 135
+        }
+      }
+    ]
+  },
+  {
+    "license": "other",
+    "revision": "7dabda4d13d513e3e842b20f0d435c732f172cbe",
+    "architecture": "qwen2",
+    "repo": "Qwen/Qwen2.5-3B-Instruct-GGUF",
+    "files": [
+      {
+        "rfilename": "qwen2.5-3b-instruct-q4_k_m.gguf",
+        "blobId": "01230798622073dd9fd68ed22ee1a81ddbb00892",
+        "size": 2104932768,
+        "lfs": {
+          "sha256": "626b4a6678b86442240e33df819e00132d3ba7dddfe1cdc4fbb18e0a9615c62d",
+          "size": 2104932768,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "qwen2.5-3b-instruct-q5_k_m.gguf",
+        "blobId": "ffee048cd9cd76e7e4848d17fb96892023e8eca1",
+        "size": 2438740384,
+        "lfs": {
+          "sha256": "2c63dde5f2c9ab1fd64d47dee2d34dade6ba9ff62442d1d20b5342310c982081",
+          "size": 2438740384,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "qwen2.5-3b-instruct-q6_k.gguf",
+        "blobId": "a1e2062197da4595141851c388734b04adba0f99",
+        "size": 2793410976,
+        "lfs": {
+          "sha256": "12da1a5d3fa6905111d8798b00ed49e0f6425441598c8c41bb37a2c36d49d0f3",
+          "size": 2793410976,
+          "pointerSize": 135
+        }
+      }
+    ]
+  },
+  {
+    "license": "apache-2.0",
+    "revision": "bb5d59e06d9551d752d08b292a50eb208b07ab1f",
+    "architecture": "qwen2",
+    "repo": "Qwen/Qwen2.5-7B-Instruct-GGUF",
+    "files": []
+  },
+  {
+    "license": "apache-2.0",
+    "revision": "593b5a2e04c8f3e4ee880263f93e0bd2901ad47f",
+    "architecture": "llama",
+    "repo": "HuggingFaceTB/SmolLM2-360M-Instruct-GGUF",
+    "files": [
+      {
+        "rfilename": "smollm2-360m-instruct-q8_0.gguf",
+        "blobId": "d6fa545f014b70945b12235c0cfbd4a9df694b22",
+        "size": 386404992,
+        "lfs": {
+          "sha256": "48ab3034d0dd401fbc721eb1df3217902fee7dab9078992d66431f09b7750201",
+          "size": 386404992,
+          "pointerSize": 134
+        }
+      }
+    ]
+  },
+  {
+    "license": "apache-2.0",
+    "revision": "2d4a76a30b4af41ecd395c35725ac11688d4cfe4",
+    "architecture": "llama",
+    "repo": "HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF",
+    "files": [
+      {
+        "rfilename": "smollm2-1.7b-instruct-q4_k_m.gguf",
+        "blobId": "aabb5a0820f6d3591cf42ba1732c43de785c9f82",
+        "size": 1055609536,
+        "lfs": {
+          "sha256": "decd2598bc2c8ed08c19adc3c8fdd461ee19ed5708679d1c54ef54a5a30d4f33",
+          "size": 1055609536,
+          "pointerSize": 135
+        }
+      }
+    ]
+  },
+  {
+    "license": "apache-2.0",
+    "revision": "91cad51170dc346986eccefdc2dd33a9da36ead9",
+    "architecture": "qwen2",
+    "repo": "Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+    "files": [
+      {
+        "rfilename": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+        "blobId": "eca68f83004d8b86fa1742ee507ddee8f4b2abce",
+        "size": 1117320736,
+        "lfs": {
+          "sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+          "size": 1117320736,
+          "pointerSize": 135
+        }
+      },
+      {
+        "rfilename": "qwen2.5-1.5b-instruct-q8_0.gguf",
+        "blobId": "1ec6832f8c80d58e2efa88832420ec7856e8e7c6",
+        "size": 1894532128,
+        "lfs": {
+          "sha256": "d7efb072e7724d25048a4fda0a3e10b04bdef5d06b1403a1c93bd9f1240a63c8",
+          "size": 1894532128,
+          "pointerSize": 135
+        }
+      }
+    ]
+  }
+]

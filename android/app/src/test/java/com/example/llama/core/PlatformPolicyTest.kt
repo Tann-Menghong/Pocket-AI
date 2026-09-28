@@ -4,6 +4,24 @@ import com.example.llama.data.TemplateFields
 import org.junit.Assert.*
 import org.junit.Test
 class PlatformPolicyTest{
+ @Test fun browsingSearchesAllWordsAndSortsInstalledFirst(){
+  val a=ModelSpec("a","Small coder","a.gguf",100,"a",creator="Qwen",purposes="Coding",quantization="Q4_K_M")
+  val b=a.copy(id="b",name="B",bytes=200)
+  val browse=com.example.llama.models.ModelBrowse
+  assertTrue(browse.search(a,"qwen   coding Q4"))
+  assertFalse(browse.search(a,"coding image"))
+  assertEquals(listOf(b,a),browse.sort(listOf(a,b),"Installed first"){it.id=="b"})
+  assertEquals(listOf(a,b),browse.sort(listOf(b,a),"Smallest download"){false})
+ }
+ @Test fun availableMemoryFilterIncludesContextAndReserve(){
+  val m=ModelSpec("a","A","a.gguf",100,"a",memory=1_000_000_000)
+  val h=Hardware(12_000_000_000,1_600_000_000,20_000_000_000,"arm64-v8a",8,0,"test")
+  assertTrue(com.example.llama.models.ModelBrowse.ready(m,h,2048))
+  assertFalse(com.example.llama.models.ModelBrowse.ready(m,h,8192))
+  assertFalse(ResourcePolicy.compatibility(m.copy(architecture="unknown"),h).allowed)
+  assertFalse(ResourcePolicy.compatibility(m.copy(kind="image",architecture="flux"),h).allowed)
+ }
+
  @Test fun modelRevisionDoesNotRepeatKnownHash(){
   val old=ModelSpec(id="old",name="Old",file="model.gguf",bytes=100,sha256="a",repo="owner/repo",revision="1")
   val next=old.copy(id="new",file="new-local.gguf",remoteFile="model.gguf",sha256="b",revision="2")
