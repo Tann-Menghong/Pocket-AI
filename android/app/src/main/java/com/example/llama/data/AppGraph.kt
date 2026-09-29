@@ -29,16 +29,21 @@ class PocketDatabase(c:Context):SQLiteOpenHelper(c,File(c.noBackupFilesDir,"pock
   require(limit in 1..100)
   val term=query.trim().take(200)
   if(term.isEmpty())return emptyList()
-  val results=mutableListOf<Conversation>()
-  // Decode one transcript at a time so Unicode and literal punctuation match accurately.
+  val oldestFirst=compareBy<Conversation>{it.updated}.thenBy{it.id}
+  val results=java.util.PriorityQueue(limit,oldestFirst)
+  // Decode one transcript at a time; keep the newest matches regardless of row ID.
   readableDatabase.query("records",arrayOf("payload"),"category=?",arrayOf("chat"),null,null,"id").use{cursor->
-   while(cursor.moveToNext()&&results.size<limit){
+   while(cursor.moveToNext()){
     val c=Conversation.from(JSONObject(cursor.getString(0)))
-    if(c.title.contains(term,true)||c.messages.any{it.text.contains(term,true)})
-     results+=c.copy(messages=c.messages.takeLast(2).map{it.copy(text=it.text.take(500))},summary=true,totalMessages=c.messages.size)
+    if(c.title.contains(term,true)||c.messages.any{it.text.contains(term,true)}){
+     if(results.size==limit&&oldestFirst.compare(c,results.peek())<=0)continue
+     val summary=c.copy(messages=c.messages.takeLast(2).map{it.copy(text=it.text.take(500))},summary=true,totalMessages=c.messages.size)
+     if(results.size==limit)results.remove()
+     results.add(summary)
+    }
    }
   }
-  return results.sortedByDescending{it.updated}
+  return results.sortedWith(oldestFirst.reversed())
  }
  fun get(category:String,id:String):JSONObject? = readableDatabase.query("records",arrayOf("payload"),"category=? AND id=?",arrayOf(category,id),null,null,null).use{if(it.moveToFirst())JSONObject(it.getString(0))else null}
  private fun rawPut(category:String,id:String,o:JSONObject){val v=ContentValues().apply{put("category",category);put("id",id);put("payload",o.toString())};check(writableDatabase.insertWithOnConflict("records",null,v,SQLiteDatabase.CONFLICT_REPLACE)!=-1L){"Local data could not be saved."}}

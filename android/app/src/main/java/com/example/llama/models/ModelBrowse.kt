@@ -2,7 +2,7 @@ package com.example.llama.models
 import com.example.llama.core.*
 
 object ModelBrowse {
- fun ready(m:ModelSpec,h:Hardware,context:Int)=ResourcePolicy.compatibility(m,h).allowed && ResourcePolicy.required(m,context)+512_000_000L<=h.availableRam
+ fun ready(m:ModelSpec,h:Hardware,context:Int)=ResourcePolicy.canLoadNow(m,h,context)
  fun search(m:ModelSpec,query:String)=query.trim().split(Regex("\\s+")).filter{it.isNotBlank()}.all { word ->
   listOf(m.name,m.creator,m.purposes,m.quantization,m.architecture,m.license).any{it.contains(word,true)}
  }

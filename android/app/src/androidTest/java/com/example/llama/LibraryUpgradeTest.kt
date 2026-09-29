@@ -11,6 +11,15 @@ import org.junit.runner.RunWith
 import java.io.*
 @RunWith(AndroidJUnit4::class)
 class LibraryUpgradeTest{
+ @Test fun searchReturnsNewestMatchesBeyondItsLimit()=runBlocking{
+  g.ready.await()
+  val prefix="Search order "+java.util.UUID.randomUUID()
+  val chats=(0 until 24).map{index->Conversation(id="${prefix}_%03d".format(index),title=prefix,updated=1_000L+index,messages=listOf(ChatMessage(role="user",text="entry $index")))}
+  try{
+   chats.forEach{g.db.put("chat",it.id,it.json())}
+   assertEquals((23 downTo 19).map{chats[it].id},g.db.searchChats(prefix,5).map{it.id})
+  }finally{chats.forEach{g.db.remove("chat",it.id)}}
+ }
 
  @Test fun searchFindsOlderUnicodeMessagesWithoutExpandingSummaries()=runBlocking{
   g.ready.await()

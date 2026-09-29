@@ -1,3 +1,18 @@
+# Validation — Pocket AI 2.2.1 preview
+
+- Baseline 2.2 release build and 19 unit tests passed before edits.
+- Release/debug/instrumentation builds and lint passed after edits (1m 46s).
+- 20 JVM tests, 0 failures; 12 Android emulator integration tests passed in 30.206s. New search test verifies newest matches beyond the result limit.
+- Qwen3 0.6B full offline generation passed: 13 tokens, 2.2 tok/s, 5.8s generation; 16.427s total.
+- SmolLM2 360M full offline generation passed: 2 tokens, 2.5 tok/s, 0.8s generation; 9.227s total.
+- Release APK installed over existing app and cold-launched in 1.425s.
+- APK: PocketAI-2.2.1-preview.apk, 52,599,356 bytes. SHA-256: 9eaf96c541f6c3d8f38fdaf227bd808d6f384b4a672ecdbf3e1d56ca9b72b1cf.
+- Version code 6; version 2.2.1-preview; release variant; existing preview/debug signer. APK signature and 16 KB ZIP alignment passed. No AAB.
+- Lint: zero errors, 77 warnings. Two Kotlin compile warnings: unnecessary assertion and deprecated memory callback constant.
+- No physical iQOO, successful image generation, video backend, full newer-APK installation or sustained heat/low-storage qualification.
+- Full audit, model tables, update security and 12-item roadmap: docs/IMPLEMENTATION-2.2.1.md.
+
+---
 # Validation — Pocket AI 2.2.0 preview
 
 - Build passed: release, debug, instrumentation APKs, JVM tests and lint (1m 39s). Initial missing import was fixed before this passing build.

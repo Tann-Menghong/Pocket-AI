@@ -76,7 +76,7 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
  private fun guard(m:ModelSpec){
   val h=Hardware.detect(getApplication());val compatibility=ResourcePolicy.compatibility(m,h);check(compatibility.allowed){compatibility.reason}
   check(h.thermal<PowerManager.THERMAL_STATUS_SEVERE){"Your phone is too warm. Let it cool before generating."}
-  check(h.availableRam>ResourcePolicy.required(m,graph.settings.options.context)){"Not enough available memory. Close other apps, reduce context length, or select a smaller model."}
+  check(ResourcePolicy.canLoadNow(m,h,graph.settings.options.context)){"Not enough available memory to load this model while leaving room for Android. Close other apps, reduce context length, or select a smaller model."}
   check(graph.installed(m)){"Download or import this model first, from Models."}
  }
  fun unload(){if(state.value.busy)return;work{graph.inferenceLock.withLock{runtime.unload()};mutable.update{it.copy(loaded="",status="Model unloaded. Memory released.")}}}

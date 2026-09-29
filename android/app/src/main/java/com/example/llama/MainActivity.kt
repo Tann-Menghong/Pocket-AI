@@ -56,6 +56,9 @@ class MainActivity:AppCompatActivity(){
  private var query=""
  private var modelFilter="All"
  private var historyFilter="All"
+ private var historyLimit=50
+ private var historySearchJob:Job?=null
+ private var historySearchResult:Pair<String,Set<String>>?=null
  private var favoritesOnly=false
  private var downloadFilter="All"
  private var renderedLibraryRevision=-1
@@ -117,7 +120,7 @@ class MainActivity:AppCompatActivity(){
    adapter?.submit(s.chat.messages)
    if(follow&&s.chat.messages.isNotEmpty())messageList?.scrollToPosition(s.chat.messages.lastIndex)
   }
-  if(shown=="History"&&renderedLibraryRevision!=s.revision){renderedLibraryRevision=s.revision;renderHistory()}
+  if(shown=="History"&&renderedLibraryRevision!=s.revision){renderedLibraryRevision=s.revision;renderHistory();if(query.isNotBlank())searchHistory()}
   createStatus?.text=s.status
   createButton?.text=if(s.busy)"Stop" else "Generate image"
   createProgress?.apply{visibility=if(s.busy)View.VISIBLE else View.GONE;isIndeterminate=s.progress<0;progress=s.progress.coerceAtLeast(0)}
@@ -282,26 +285,49 @@ class MainActivity:AppCompatActivity(){
  }
  private fun buildHistory(body:LinearLayout){
   kit.section(body,"Your library","Conversations and creations, saved only on this device.")
-  body.addView(kit.input("Search history",query).apply{doAfterTextChanged{query=it.toString();renderHistory()}})
+  body.addView(kit.input("Search history",query).apply{doAfterTextChanged{query=it.toString();historyLimit=50;searchHistory()}})
   kit.addButtons(body,kit.button("Type: $historyFilter",true){choose("History",listOf("All","Text","Images","Videos","Archived")){historyFilter=it;buildPage("History")}},kit.button(if(favoritesOnly)"Favorites only" else "All items",true){favoritesOnly=!favoritesOnly;buildPage("History")})
   if(historyFilter=="Images")body.addView(kit.button(if(vm.graph.settings.bool("galleryGrid"))"List view" else "Grid view",true){vm.graph.settings.set("galleryGrid",!vm.graph.settings.bool("galleryGrid"));renderHistory()})
-  historyRows=kit.column();body.addView(historyRows);renderHistory()
+  historyRows=kit.column();body.addView(historyRows);renderHistory();if(query.isNotBlank())searchHistory()
+ }
+ private fun searchHistory(){
+  historySearchJob?.cancel()
+  val term=query
+  historySearchResult=null
+  renderHistory()
+  if(term.isBlank())return
+  historySearchJob=lifecycleScope.launch{
+   delay(250)
+   try{
+    val ids=withContext(Dispatchers.IO){vm.graph.db.searchChats(term,100).map{it.id}.toSet()}
+    if(query==term&&shown=="History"){historySearchResult=term to ids;renderHistory()}
+   }catch(e:CancellationException){throw e}catch(e:Exception){if(query==term)vm.error("Could not search conversations: "+e.message)}
+  }
  }
  private fun renderHistory(){
   val host=historyRows?:return;host.removeAllViews();var count=0
-  if(historyFilter in setOf("All","Text","Archived"))vm.state.value.conversations.filter{(if(historyFilter=="Archived")it.archived else !it.archived)&&(!favoritesOnly||it.pinned)&&(query.isBlank()||(it.title+" "+it.messages.joinToString(" "){m->m.text}).contains(query,true))}.forEach{c->
+  val matches=historySearchResult?.takeIf{it.first==query}?.second
+  if(historyFilter in setOf("All","Text","Archived")){
+  val chats=vm.state.value.conversations.filter{(if(historyFilter=="Archived")it.archived else !it.archived)&&(!favoritesOnly||it.pinned)&&(query.isBlank()||(matches?.contains(it.id)?:((it.title+" "+it.messages.joinToString(" "){m->m.text}).contains(query,true))))}
+  chats.take(historyLimit).forEach{c->
    count++;val card=kit.card();card.addView(kit.label((if(c.pinned)"★ " else "")+c.title,18,true));card.addView(kit.label("${if(c.summary)c.totalMessages else c.messages.size} messages · "+DateFormat.getDateTimeInstance(DateFormat.MEDIUM,DateFormat.SHORT).format(c.updated),12,secondary=true))
    kit.addButtons(card,kit.button("Open"){vm.openChat(c)},kit.button("Actions",true){choose(c.title,listOf("Rename","Pin / unpin","Archive / restore","Share","Delete")){when(it){"Archive / restore"->vm.archive(c);"Rename"->inputDialog("Rename",c.title){vm.rename(c,it)};"Pin / unpin"->vm.pin(c);"Share"->io("Preparing conversation",{vm.exportText(vm.graph.fullChat(c.id))}){shareText(it)};"Delete"->confirm("Delete conversation?","This cannot be undone."){vm.deleteChat(c)}}}})
    host.addView(card)
   }
+  if(chats.size>historyLimit)host.addView(kit.button("Show more conversations",true){historyLimit+=50;renderHistory()})
+  }
   var imageRow:LinearLayout?=null;var imageIndex=0
-  if(historyFilter in setOf("All","Images"))vm.state.value.media.filter{(!favoritesOnly||it.favorite)&&(query.isBlank()||it.prompt.contains(query,true))}.forEach{m->
+  if(historyFilter in setOf("All","Images")){
+  val images=vm.state.value.media.filter{(!favoritesOnly||it.favorite)&&(query.isBlank()||it.prompt.contains(query,true))}
+  images.take(historyLimit).forEach{m->
    count++;val card=kit.card();card.addView(kit.label((if(m.favorite)"★ " else "")+m.prompt.take(100),17,true))
    val preview=ImageView(this).apply{adjustViewBounds=true;contentDescription=m.prompt;maxHeight=kit.dp(300);setOnClickListener{showImage(m)}};card.addView(preview)
-   lifecycleScope.launch{val bitmap=withContext(Dispatchers.IO){BitmapFactory.decodeFile(File(vm.graph.mediaDir,m.file).path,BitmapFactory.Options().apply{inSampleSize=2})};preview.setImageBitmap(bitmap)}
+   lifecycleScope.launch{val bitmap=withContext(Dispatchers.IO){BitmapFactory.decodeFile(File(vm.graph.mediaDir,m.file).path,BitmapFactory.Options().apply{inSampleSize=4})};preview.setImageBitmap(bitmap)}
    card.addView(kit.label("${m.width} × ${m.height} · ${m.steps} steps · Seed ${m.seed}\n${m.model}",12,secondary=true))
    kit.addButtons(card,kit.button("Share",true){shareImage(m)},kit.button("Reuse",true){vm.createPrompt=m.prompt;vm.negativePrompt=m.negative;vm.createMode="Image";vm.navigate("Create")},kit.button("More",true){choose("Image",listOf("Favorite / unfavorite","Regenerate","Delete")){when(it){"Favorite / unfavorite"->vm.favoriteMedia(m);"Regenerate"->{vm.graph.models.value.firstOrNull{it.name==m.model}?.let{vm.graph.settings.set("defaultImage",it.id)};vm.imageGenerate(m.prompt,m.negative,m.width,m.height,m.steps,m.cfg,m.seed,1)};"Delete"->confirm("Delete image?","This removes the local image."){vm.deleteMedia(m)}}}})
    if(vm.graph.settings.bool("galleryGrid")&&historyFilter=="Images"){if(imageIndex%2==0){imageRow=kit.row().apply{gravity=android.view.Gravity.TOP};host.addView(imageRow)};imageRow!!.addView(card,LinearLayout.LayoutParams(0,-2,1f).apply{marginEnd=kit.dp(4)});imageIndex++}else host.addView(card)
+  }
+  if(images.size>historyLimit)host.addView(kit.button("Show more images",true){historyLimit+=50;renderHistory()})
   }
   if(count==0)host.addView(kit.label(if(historyFilter=="Videos")"Local video generation is not enabled. No unsupported video models are offered for download." else "Nothing here yet. Your conversations and creations will appear here.",16,secondary=true))
  }
