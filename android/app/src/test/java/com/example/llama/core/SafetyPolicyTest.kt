@@ -10,6 +10,12 @@ class SafetyPolicyTest {
  private val phone=Hardware(12_000_000_000,7_000_000_000,20_000_000_000,"arm64-v8a",8,0,"QA")
  private val model=ModelSpec("test","Test","test.gguf",600_000_000,"hash",memory=1_500_000_000)
  @Test fun blocksImpossibleMemory(){assertFalse(ResourcePolicy.compatibility(model.copy(memory=11_000_000_000),phone).allowed)}
+ @Test fun normalBackgroundingIsNotMemoryPressure(){
+  assertTrue(MemoryTrimPolicy.runningLow(10))
+  assertTrue(MemoryTrimPolicy.runningLow(15))
+  assertFalse(MemoryTrimPolicy.runningLow(20)) // UI_HIDDEN, seen during the update installer flow.
+  assertFalse(MemoryTrimPolicy.runningLow(40)) // BACKGROUND.
+ }
  @Test fun keepsMemoryReserveBeforeLoading(){
   val low=phone.copy(availableRam=ResourcePolicy.required(model,2048)+ResourcePolicy.ANDROID_MEMORY_RESERVE-1)
   assertFalse(ResourcePolicy.canLoadNow(model,low,2048))

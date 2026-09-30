@@ -13,6 +13,15 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class PlatformSmokeTest {
  private val app get()=InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as PocketApplication
+ @Test fun hidingUiDoesNotShowMemoryAlarm(){
+  app.graph.settings.set("onboarded",true)
+  ActivityScenario.launch(MainActivity::class.java).use{scenario->
+   scenario.onActivity{it.vm.dismissError()}
+   app.onTrimMemory(20) // Android's ordinary UI_HIDDEN callback.
+   Thread.sleep(250)
+   scenario.onActivity{assertEquals("",it.vm.state.value.error)}
+  }
+ }
  @Test fun libraryAndSettingsPersist()=runBlocking {
   val g=app.graph;g.ready.await();assertTrue(g.models.value.size>=9)
   val c=Conversation(title="QA roundtrip",messages=listOf(ChatMessage(role="user",text="Hello 世界 👋")))

@@ -54,7 +54,12 @@ class PlatformViewModel(app:Application):AndroidViewModel(app) {
    }catch(e:Exception){error("Your library could not be opened. Existing data was preserved. "+e.message)}
   }
   viewModelScope.launch{graph.error.collect{if(it.isNotEmpty())error(it)}}
-  viewModelScope.launch{graph.memoryPressure.collect{if(it){if(state.value.busy)stop()else unload();graph.memoryPressure.value=false;error("Android reports memory pressure. Try a smaller model or context.")}}}
+  viewModelScope.launch{graph.memoryPressure.collect{if(it){
+   val active=state.value.busy||state.value.loaded.isNotBlank()
+   if(state.value.busy)stop()else if(active)unload()
+   graph.memoryPressure.value=false
+   if(active)error("Android reports memory pressure. Try a smaller model or context.")
+  }}}
  }
  private fun presets()=graph.db.all("preset").map{Preset.from(it)}.sortedBy{it.name}
  fun error(message:String){mutable.update{it.copy(error=message)}}

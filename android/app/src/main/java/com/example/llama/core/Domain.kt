@@ -59,6 +59,11 @@ data class Hardware(val totalRam:Long,val availableRam:Long,val storage:Long,val
  companion object {fun detect(c:Context):Hardware{val m=ActivityManager.MemoryInfo();(c.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).getMemoryInfo(m);return Hardware(m.totalMem,m.availMem,c.noBackupFilesDir.usableSpace,Build.SUPPORTED_ABIS.joinToString(),Runtime.getRuntime().availableProcessors(),(c.getSystemService(Context.POWER_SERVICE) as PowerManager).currentThermalStatus,Build.MANUFACTURER+" "+Build.MODEL)}}
 }
 data class Compatibility(val allowed:Boolean,val label:String,val reason:String)
+object MemoryTrimPolicy {
+ // Android's running-low hints are 10..15; UI_HIDDEN is 20 and is not memory pressure.
+ // Running-low hints are no longer delivered on Android 14+, so load admission remains the primary guard.
+ fun runningLow(level:Int)=level in 10 until 20
+}
 object ResourcePolicy {
  const val ANDROID_MEMORY_RESERVE=512_000_000L
  fun required(model:ModelSpec,context:Int)=model.memory+if(model.kind=="text") (context-2048).coerceAtLeast(0)*160_000L else 0

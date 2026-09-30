@@ -85,7 +85,10 @@ class Settings(c:Context) {
 class PocketApplication:Application(){
  val graph by lazy { AppGraph(this) }
  override fun onCreate(){super.onCreate();graph}
- override fun onTrimMemory(level:Int){super.onTrimMemory(level);if(level>=TRIM_MEMORY_RUNNING_LOW)graph.memoryPressure.value=true}
+ override fun onTrimMemory(level:Int){
+  super.onTrimMemory(level)
+  if(MemoryTrimPolicy.runningLow(level))graph.memoryPressure.value=true
+ }
 }
 class AppGraph(val app:Application) {
  val scope=CoroutineScope(SupervisorJob()+Dispatchers.IO)

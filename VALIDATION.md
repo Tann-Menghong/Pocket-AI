@@ -1,3 +1,13 @@
+# Validation — Pocket AI 2.2.2 preview
+
+- Fixed a confirmed false memory-pressure warning on normal Android UI backgrounding. The 2.2.1 build reproduced it; the 2.2.2 release build did not.
+- Full in-app update from published 2.2.0 to 2.2.1 passed on an isolated API 35 emulator: discovery, 53 MB download, checksum/package/version/signer verification, Android source permission and user-confirmed package installation. Version code changed from 5 to 6; setup was retained.
+- Release/debug/Android-test builds and lint passed. 21 JVM tests passed. 13 offline-capable Android integration tests passed, including the new memory callback regression.
+- One additional live Hugging Face metadata test failed because the emulator had no DNS; both QA emulators returned `unknown host huggingface.co`. It needs a network-enabled rerun.
+- 2.2.2 release APK installed over 2.2.1 and cold-launched. 52,600,280 bytes; SHA-256 `cac5d4ed67d86b45ee3314fe0dd809afbf331ea585d3da314d0b126d146c7f74`; versionCode 7, versionName 2.2.2-preview. Signature and 16 KB ZIP alignment passed. Lint: 0 errors, 77 warnings.
+- No physical iQOO, successful image generation, video backend, new model inference qualification or sustained performance test. See docs/RELIABILITY-2.2.2.md for the focused report and docs/IMPLEMENTATION-2.2.1.md for audit, model tables and roadmap.
+
+---
 # Validation — Pocket AI 2.2.1 preview
 
 - Baseline 2.2 release build and 19 unit tests passed before edits.
